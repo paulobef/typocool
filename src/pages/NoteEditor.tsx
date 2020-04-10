@@ -15,7 +15,7 @@ import { updateNote} from "../store/notes/actions";
 import {createAndOpenNewNote, deleteNoteAndNavigate} from "../store/notes/helpers";
 import {useLastNoteId} from "../store/notes/hooks";
 import {Note} from "../store/notes/types";
-import NoteScreenIndex from "./NoteScreenIndex";
+import NoteIndex from "./NoteIndex";
 
 
 export type StyleHandler = (style: string) => void
@@ -141,9 +141,9 @@ export interface NoteScreenProps extends RouteComponentProps
 }
 
 /** @jsx jsx */
-function NoteScreen(props: NoteScreenProps): JSX.Element {
+function NoteEditor(props: NoteScreenProps): JSX.Element {
     const note = useSelector((state: RootState) => state.notes.notes.find(note => note.id === Number(props.noteId)))
-    if (!note) return <NoteScreenIndex path={'/'}/>
+    if (!note) return <NoteIndex path={'/'}/>
 
     return (
         <TypocoolEditor
@@ -152,7 +152,7 @@ function NoteScreen(props: NoteScreenProps): JSX.Element {
     )
 }
 
-export default NoteScreen
+export default NoteEditor
 
 
 

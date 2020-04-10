@@ -32,7 +32,7 @@ export function deleteNote(payload: {id: number}): NoteActionTypes {
     }
 }
 /*
-export function loadNote(payload: Note): NoteActionTypes {
+export function loadNote(payload: NoteEditor): NoteActionTypes {
     return {
         type: LOAD_NOTE,
         payload

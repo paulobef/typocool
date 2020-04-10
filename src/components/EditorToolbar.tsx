@@ -1,4 +1,4 @@
-import {EditorControl, StyleControl, StyleHandler} from "../pages/NoteScreen";
+import {EditorControl, StyleControl, StyleHandler} from "../pages/NoteEditor";
 import {ButtonSize, IconButton, Layer} from "sancho";
 import React from "react";
 import { jsx } from '@emotion/core'

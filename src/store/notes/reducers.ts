@@ -45,7 +45,7 @@ function updateEditorTitle(state: NoteState, payload: string | null ): NoteState
     return Object.freeze(Object.assign({}, state, { editor: newEditor }))
 }
 
-function loadNote(state: NoteState, payload: Note): NoteState {
+function loadNote(state: NoteState, payload: NoteEditor): NoteState {
     const newEditor = Object.assign({}, state.editor, { id: payload.id ,title: payload.title, editorState: EditorState.createWithContent(payload.content)})
     return Object.freeze(Object.assign({}, state, { editor: newEditor }))
 }*/
@@ -60,7 +60,7 @@ const initialState: NoteState = Object.freeze({
 });
 
 
-export function notes(state = initialState, action: NoteActionTypes): NoteState {
+export default function notes(state = initialState, action: NoteActionTypes): NoteState {
     switch (action.type) {
         case ADD_NOTE: return addNote(state, action.payload);
         case UPDATE_NOTE: return updateNote(state, action.payload);

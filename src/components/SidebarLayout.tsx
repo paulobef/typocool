@@ -10,6 +10,7 @@ interface SidebarLayoutProps {
     dividerWidth?: number
     dividerBackgroundColor?: string
     onResize?: (x: number)  => void
+    path: string
 
 }
 

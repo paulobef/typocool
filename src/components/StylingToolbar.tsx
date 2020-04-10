@@ -1,7 +1,7 @@
 import React, { forwardRef, Ref} from "react";
 import { IconButton, IconBold, Layer } from "sancho";
 import { jsx } from '@emotion/core'
-import {StyleControl, StyleHandler} from "../pages/NoteScreen";
+import {StyleControl, StyleHandler} from "../pages/NoteEditor";
 import { EditorState } from "draft-js";
 
 

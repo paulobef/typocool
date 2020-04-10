@@ -6,12 +6,12 @@ import {useDispatch} from "react-redux";
 import {useNavigate} from "@reach/router"
 import {createAndOpenNewNote} from "../store/notes/helpers";
 import {useLastNoteId} from "../store/notes/hooks";
-import {NoteScreenProps} from "./NoteScreen";
+import {NoteScreenProps} from "./NoteEditor";
 
 
 
 /** @jsx jsx */
-function NoteScreenIndex(props: NoteScreenProps): JSX.Element {
+function NoteIndex(props: NoteScreenProps): JSX.Element {
     const dispatch = useDispatch();
     const navigate = useNavigate()
     const lastNoteId = useLastNoteId();
@@ -35,4 +35,4 @@ function NoteScreenIndex(props: NoteScreenProps): JSX.Element {
     )
 }
 
-export default NoteScreenIndex
+export default NoteIndex

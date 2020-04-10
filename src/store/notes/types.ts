@@ -39,7 +39,7 @@ interface DeleteNoteAction {
 /*
 interface loadNoteAction {
     type: typeof LOAD_NOTE
-    payload: Note
+    payload: NoteEditor
 }
 
 interface updateEditorStateAction {

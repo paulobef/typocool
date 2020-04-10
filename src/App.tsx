@@ -1,31 +1,47 @@
-import React, { useState, Fragment } from 'react';
+import React, {useState, Fragment, useEffect} from 'react';
 import './App.css';
 import SidebarLayout from "./components/SidebarLayout";
-import { jsx } from '@emotion/core'
-import NoteScreen from "./pages/NoteScreen";
+import NoteEditor from "./pages/NoteEditor";
 import MainMenu from "./components/MainMenu";
-import {createHistory, LocationProvider, Router} from "@reach/router";
-import NoteScreenIndex from "./pages/NoteScreenIndex";
+import {Redirect, Router} from "@reach/router";
+import NoteIndex from "./pages/NoteIndex";
+import {RootState} from "./store";
+import {useSelector} from "react-redux";
+import Login from "./pages/Login";
 
-/** @jsx jsx */
-function App() {
-    // @ts-ignore
-    let history = createHistory(window)
-    return (
-        <LocationProvider history={history}>
-        <SidebarLayout
-            mainScreenComponent={
-                <Router>
-                    <NoteScreen path={'notes/:noteId'}/>
-                    <NoteScreenIndex path={'/'}/>
-                 </Router>
+
+
+
+function App () {
+    const isAuthenticated = useSelector((state: RootState) => state.auth.isAuthenticated)
+   // const [authenticated, setIsAuthenticated] = useState(isAuthenticated)
+
+   /* useEffect(() => {
+        setIsAuthenticated(isAuthenticated)
+    }, [isAuthenticated]) */
+
+
+    console.log(isAuthenticated)
+    if (isAuthenticated) {
+        return (
+            <SidebarLayout
+                path={'*'}
+                mainScreenComponent={
+                    <Router>
+                        <NoteEditor path={'notes/:noteId'}/>
+                        <NoteIndex path={'/'}/>
+                    </Router>
                 }
-            sidebarComponent={<MainMenu />}
-            initialSidebarWidth={200}
-            resizable={true}
-        />
-        </LocationProvider>
-  );
+                sidebarComponent={<MainMenu />}
+                initialSidebarWidth={200}
+                resizable={true}
+            />
+        )
+    } else {
+        return <Login />
+    }
+
+
 }
 
 export default App;
