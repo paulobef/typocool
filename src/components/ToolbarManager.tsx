@@ -20,6 +20,7 @@ interface ToolbarManagerProps {
     flyingToolbar?: React.ComponentElement<any, any>
     fixedToolbar?: React.ComponentElement<any, any>
     title?: React.ComponentElement<any, any> | Text
+    onKeyPress?: ((event: React.KeyboardEvent<HTMLDivElement>) => void)
 }
 
 
@@ -46,7 +47,8 @@ function ToolbarManager({
                               editor,
                               title,
                               flyingToolbar,
-                              fixedToolbar
+                              fixedToolbar,
+                              onKeyPress
 }: ToolbarManagerProps): React.ComponentElement<any, any> {
 
     const [toolbarState, setToolbarState] = useState<ToolbarState>({
@@ -97,7 +99,7 @@ function ToolbarManager({
     });
 
     return (
-        <div css={ {display: 'flex', flexDirection: 'row'} }>
+        <div onKeyPress={onKeyPress} css={ {display: 'flex', flexDirection: 'row'} }>
             { flyingToolbar ?
                 <ToolbarWrapper
                     ref={toolbarRef}

@@ -1,21 +1,21 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import {Editor, EditorState, RichUtils} from 'draft-js';
-import {IconBold, IconCode, IconDelete, IconItalic, IconList, IconSave, IconX, IconXCircle} from "sancho";
+import {IconBold, IconCode, IconItalic, IconList, IconSave, IconXCircle} from "sancho";
 import { jsx } from '@emotion/core'
-import {navigate, Redirect, RouteComponentProps, useParams} from '@reach/router'
+import {navigate, RouteComponentProps, useNavigate} from '@reach/router'
 import ToolbarManager from "../components/ToolbarManager";
 import EditableTitle from "../components/EditableTitle";
 import StylingToolbar from "../components/StylingToolbar";
 import '../App.css'
 import 'draft-js/dist/Draft.css'
 import {useDispatch, useSelector} from "react-redux";
-import {RootState} from "../store";
+import { RootState } from "../store";
 import EditorToolbar from "../components/EditorToolbar";
 import { updateNote} from "../store/notes/actions";
-import {createAndOpenNewNote, deleteNoteAndNavigate} from "../store/notes/helpers";
-import {useLastNoteId} from "../store/notes/hooks";
-import {Note} from "../store/notes/types";
+import { deleteNoteAndNavigate } from "../store/notes/helpers";
+import { Note } from "../store/notes/types";
 import NoteIndex from "./NoteIndex";
+import {getNoteForEdition} from "../store/editor/thunks";
 
 
 export type StyleHandler = (style: string) => void
@@ -64,6 +64,7 @@ const TypocoolEditor = ({ note }: { note: Note}) =>  {
     const { id, title, content } = note;
     const [editorTitle, setEditorTitle] = useState(title)
     const [editorState, setEditorState] = useState(EditorState.createWithContent(content))
+    const editorRef = useRef(null);
 
     useEffect(() => {
         setEditorState(EditorState.createWithContent(content))
@@ -80,6 +81,14 @@ const TypocoolEditor = ({ note }: { note: Note}) =>  {
 
     function handleDeleteNote(id: number) {
         deleteNoteAndNavigate(id, '/', { dispatch, navigate })
+    }
+
+    const handlePressEnter = (event: React.KeyboardEvent)  => {
+        if (event.key === 'Enter') {
+            event.preventDefault()
+            // @ts-ignore
+            editorRef.current.focus()
+        }
     }
 
     function handleSaveNote() {
@@ -104,6 +113,7 @@ const TypocoolEditor = ({ note }: { note: Note}) =>  {
     return (
         <div css={{ width: 850, paddingLeft: 50, paddingRight: 50, paddingTop: 20, paddingBottom: 20 }}>
             <ToolbarManager
+                onKeyPress={handlePressEnter}
                 flyingToolbar={
                     <StylingToolbar
                         editorState={editorState}
@@ -127,7 +137,7 @@ const TypocoolEditor = ({ note }: { note: Note}) =>  {
                 }
                 editor={
                     <div css={{ width: 750 }}>
-                        <Editor editorState={editorState} onChange={setEditorState} placeholder={'Write down some thoughts...'}/>
+                        <Editor ref={editorRef} editorState={editorState} onChange={value => setEditorState(value)} placeholder={'Write down some thoughts...'}/>
                     </div>
                 }
             />
@@ -142,14 +152,19 @@ export interface NoteScreenProps extends RouteComponentProps
 
 /** @jsx jsx */
 function NoteEditor(props: NoteScreenProps): JSX.Element {
-    const note = useSelector((state: RootState) => state.notes.notes.find(note => note.id === Number(props.noteId)))
-    if (!note) return <NoteIndex path={'/'}/>
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
+    useEffect(() => {
+        if (props.noteId) {
+            dispatch(getNoteForEdition(props.noteId))
+        }
 
-    return (
-        <TypocoolEditor
-            note={note}
-        />
-    )
+    }, [props.noteId]);
+    if (!props.noteId) {
+        navigate('/');
+        return <NoteIndex path={'*'}/>
+    }
+    return <TypocoolEditor />
 }
 
 export default NoteEditor

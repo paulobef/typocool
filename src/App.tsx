@@ -7,7 +7,7 @@ import {Redirect, Router} from "@reach/router";
 import NoteIndex from "./pages/NoteIndex";
 import {RootState} from "./store";
 import {useSelector} from "react-redux";
-import Login from "./pages/Login";
+import SignInOrUp from "./pages/SignInOrUp";
 
 
 
@@ -38,7 +38,7 @@ function App () {
             />
         )
     } else {
-        return <Login />
+        return <SignInOrUp />
     }
 
 

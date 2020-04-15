@@ -5,7 +5,7 @@ import {
     MenuList,
     MenuItem,
     IconHome,
-    IconSettings, Divider, IconPlus, IconSave, IconUser
+    IconSettings, Divider, IconPlus, IconSave, IconUser, Text
 } from 'sancho'
 import NoteList from "./NoteList";
 import {RootState} from "../store";

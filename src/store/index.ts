@@ -2,21 +2,27 @@ import {combineReducers, createStore, applyMiddleware, AnyAction} from "redux";
 import thunk, {ThunkDispatch} from 'redux-thunk';
 import notes from "./notes/reducers";
 import auth from "./auth/reducers"
+import user from "./user/reducers"
 import * as firebase from 'firebase/app'
+import 'firebase/firestore';
 import 'firebase/auth'
 import { firebaseConfig } from '../firebaseConfig'
 import {verifyAuth} from "./auth/thunks";
+import editor from "./editor/reducers";
 
 // Initialize firebase instance
 export const firebaseApp = firebase.initializeApp(firebaseConfig)
 
 // Initialize other services on firebase instance
-export const db = firebase.firestore();
+export const fireauth = firebaseApp.auth();
+export const firestore = firebase.firestore();
 // firebase.functions() // <- needed if using httpsCallable
 
 const noteApp = combineReducers({
     notes,
-    auth
+    auth,
+    user,
+    editor
 })
 export type RootState = ReturnType<typeof noteApp>
 

@@ -6,67 +6,68 @@ import {
     LOGOUT_SUCCESS,
     LOGOUT_FAILURE,
     VERIFY_REQUEST,
-    VERIFY_SUCCESS, AuthActionsType, AuthState
+    VERIFY_SUCCESS,
+    AuthActionTypes, AuthState
 } from './types'
 import {User} from "firebase";
-
+import {assfreeze} from "../../utils/assfreeze";
 
 function requestLogin(state: AuthState): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isLoggingIn: true,
         loginError: false
-    }))
+    }) as AuthState
 }
 
 function loginSuccess(state: AuthState, payload: User): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isLoggingIn: false,
         isAuthenticated: true,
         user: payload
-    }))
+    }) as AuthState
 }
 
 function loginError(state: AuthState): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isLoggingIn: false,
         isAuthenticated: false,
         loginError: true
-    }))
+    }) as AuthState
 }
 
 function logoutRequest(state: AuthState): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isLoggingOut: true,
         logoutError: false
-    }))
+    }) as AuthState
 }
 
 function logoutSuccess(state: AuthState): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isLoggingOut: false,
         isAuthenticated: false,
         logoutError: false
-    }))
+    }) as AuthState
 }
 
 function logoutError(state: AuthState): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isLoggingOut: false,
         logoutError: true
-    }))
+    }) as AuthState
 }
 
 function verifyRequest(state: AuthState): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isVerifying: true,
         verifyingError: false
-    }))
+    }) as AuthState
 }
 
 function verifySuccess(state: AuthState): AuthState {
-    return Object.freeze(Object.assign({}, state, {
+    return assfreeze(state, {
         isVerifying: false
-    }))
+    }) as AuthState
 }
 
 
@@ -79,9 +80,9 @@ const initialState: AuthState = {
     logoutError: false,
     isAuthenticated: false,
     user: Object.create(null)
-}
+};
 
-export default function auth(state = initialState, action: AuthActionsType) {
+export default function auth(state = initialState, action: AuthActionTypes) {
     switch (action.type) {
         case LOGIN_REQUEST: return requestLogin(state);
         case LOGIN_SUCCESS: return loginSuccess(state, action.payload);
@@ -91,6 +92,7 @@ export default function auth(state = initialState, action: AuthActionsType) {
         case LOGOUT_FAILURE: return logoutError(state)
         case VERIFY_REQUEST: return verifyRequest(state)
         case VERIFY_SUCCESS: return verifySuccess(state)
+
         default:
             return state;
     }
