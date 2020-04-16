@@ -14,7 +14,7 @@ function NoteList({ list }: NoteListProps) {
                 {
                     list.map((item: any) =>
                         <Link css={{ textDecoration: 'none' }} to={'notes/' + item.id }>
-                            <MenuItem >
+                            <MenuItem contentAfter={"id: " + item.id} >
                                     { item.title || 'Untitled' }
                             </MenuItem>
                         </Link>

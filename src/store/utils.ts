@@ -3,9 +3,12 @@ import {firestore} from "./index";
 import firebase from "firebase";
 import {Note} from "./notes/types";
 import {convertFromRaw, convertToRaw} from "draft-js";
-import DocumentData = firebase.firestore.DocumentData;
-import QueryDocumentSnapshot = firebase.firestore.QueryDocumentSnapshot;
-import SnapshotOptions = firebase.firestore.SnapshotOptions;
+import {navigate} from "@reach/router";
+
+
+type DocumentData = firebase.firestore.DocumentData;
+type QueryDocumentSnapshot = firebase.firestore.QueryDocumentSnapshot;
+type SnapshotOptions = firebase.firestore.SnapshotOptions;
 
 // USER
 
@@ -18,7 +21,8 @@ export const userConverter = {
         options: SnapshotOptions
     ): User {
         const data = snapshot.data(options)!;
-        return new User(data.id, data.firstName, data.lastName, data.email);
+        const id = snapshot.id!;
+        return new User(id, data.firstName, data.lastName, data.email);
     }
 };
 
@@ -41,7 +45,8 @@ export const noteConverter = {
         options: SnapshotOptions
     ): Note {
         const data = snapshot.data(options)!;
-        return new Note(data.id, data.title, convertFromRaw(data.content), data.authorId);
+        const id = snapshot.id!;
+        return new Note(id, data.title, convertFromRaw(data.content), data.authorId);
     }
 };
 
@@ -51,7 +56,8 @@ export const getNotesFromFirestore = async (uid: string): Promise<Array<Note>> =
 };
 
 export const getOneNoteFromFirestore = async (id: string): Promise<Note | undefined> => {
+    if (!id) throw new Error('no id')
     const noteSnap = await firestore.collection('notes').withConverter(noteConverter).doc(id).get();
-    if(!noteSnap.exists) throw new Error('404, this note does not exist')
+    if(!noteSnap.exists)  { return  }
     return noteSnap.data()
 };

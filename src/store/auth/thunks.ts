@@ -9,8 +9,9 @@ import {
     verifyRequest, verifySuccess
 } from "./actions";
 import {AppThunkAction} from "../types";
-import {receiveUserData} from "../user/actions";
-import {getUserFromFirestore} from "../user/thunks";
+import { receiveUserData } from "../user/actions";
+import { getUserFromFirestore } from "../utils";
+import {loadNotesFromFirestore} from "../notes/thunks";
 
 
 
@@ -21,7 +22,6 @@ export const loginUser = (email: string, password: string): AppThunkAction => as
         const { user } = await fireauth.signInWithEmailAndPassword(email, password);
         if (user !== null) {
             console.log(user);
-            dispatch(receiveLogin(user));
             dispatch(receiveLogin(user));
             const dbUser = await getUserFromFirestore(user.uid);
             dispatch(receiveUserData(dbUser));
@@ -57,9 +57,9 @@ export const verifyAuth = (): AppThunkAction => async dispatch => {
             if (user !== null) {
                 console.log(user);
                 dispatch(receiveLogin(user));
-                dispatch(receiveLogin(user));
                 const dbUser = await getUserFromFirestore(user.uid);
                 dispatch(receiveUserData(dbUser));
+                dispatch(loadNotesFromFirestore())
                 dispatch(verifySuccess());
             }});
     } catch (error) {

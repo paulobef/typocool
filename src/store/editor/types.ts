@@ -11,10 +11,11 @@ interface loadNoteAction {
 
 interface updateLoadedNoteAction {
     type: typeof UPDATE_LOADED_NOTE
-    payload: {title: string, editorState: EditorState}
+    payload: {id: string, title: string, editorState: EditorState}
 }
 
 export interface LoadedNoteState {
+    id: string
     title: string
     editorState: EditorState
 }

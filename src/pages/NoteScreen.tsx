@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import {Editor, EditorState, RichUtils} from 'draft-js';
 import {IconBold, IconCode, IconItalic, IconList, IconSave, IconXCircle} from "sancho";
 import { jsx } from '@emotion/core'
-import {navigate, RouteComponentProps, useNavigate} from '@reach/router'
+import { RouteComponentProps, useNavigate} from '@reach/router'
 import ToolbarManager from "../components/ToolbarManager";
 import EditableTitle from "../components/EditableTitle";
 import StylingToolbar from "../components/StylingToolbar";
@@ -11,11 +11,10 @@ import 'draft-js/dist/Draft.css'
 import {useDispatch, useSelector} from "react-redux";
 import { RootState } from "../store";
 import EditorToolbar from "../components/EditorToolbar";
-import { updateNote} from "../store/notes/actions";
-import { deleteNoteAndNavigate } from "../store/notes/helpers";
-import { Note } from "../store/notes/types";
 import NoteIndex from "./NoteIndex";
 import {getNoteForEdition} from "../store/editor/thunks";
+import {updateLoadedNote} from "../store/editor/actions";
+import {deleteNote, updateNote} from "../store/notes/thunks";
 
 
 export type StyleHandler = (style: string) => void
@@ -59,46 +58,58 @@ const BLOCK_TYPES: Array<StyleControl> = [
 ];
 
 /** @jsx jsx */
-const TypocoolEditor = ({ note }: { note: Note}) =>  {
+const NoteEditor = () =>  {
     const dispatch = useDispatch();
-    const { id, title, content } = note;
-    const [editorTitle, setEditorTitle] = useState(title)
-    const [editorState, setEditorState] = useState(EditorState.createWithContent(content))
+    const {id, title, editorState } = useSelector((state: RootState) => state.editor);
+    if (!editorState) throw new Error('no editor state')
     const editorRef = useRef(null);
 
-    useEffect(() => {
-        setEditorState(EditorState.createWithContent(content))
-        setEditorTitle(title)
-    }, [title, content])
+    function handleUpdateTitle(value: string) {
+        dispatch(updateLoadedNote({
+            id,
+            title: value,
+            editorState
+        }))
+    }
+
+    function handleUpdateEditorState(value: EditorState) {
+        dispatch(updateLoadedNote({
+            id,
+            title,
+            editorState: value
+        }))
+    }
 
     function handleToggleInlineStyle(inlineStyle: string) {
-        setEditorState(RichUtils.toggleInlineStyle(editorState, inlineStyle))
+        dispatch(updateLoadedNote({
+            id,
+            title,
+            editorState: RichUtils.toggleInlineStyle(editorState, inlineStyle)
+        }))
     }
 
     function handleToggleBlockType(blockType: string) {
-        setEditorState(RichUtils.toggleBlockType(editorState, blockType))
+        dispatch(updateLoadedNote({
+            id,
+            title,
+            editorState: RichUtils.toggleBlockType(editorState, blockType)
+        }))
     }
 
-    function handleDeleteNote(id: number) {
-        deleteNoteAndNavigate(id, '/', { dispatch, navigate })
+    function handleDeleteNote() {
+        dispatch(deleteNote(id))
     }
 
     const handlePressEnter = (event: React.KeyboardEvent)  => {
         if (event.key === 'Enter') {
-            event.preventDefault()
+            event.preventDefault();
             // @ts-ignore
             editorRef.current.focus()
         }
     }
 
     function handleSaveNote() {
-        if (id) {
-            dispatch(updateNote({
-                id: id,
-                title: editorTitle,
-                content: editorState.getCurrentContent()
-            }))
-        }
+        dispatch(updateNote(id, title, editorState.getCurrentContent()))
     }
 
     const controlsMap = [
@@ -109,7 +120,7 @@ const TypocoolEditor = ({ note }: { note: Note}) =>  {
         },
     ];
 
-    if (id) controlsMap.push({ label: 'delete', icon: <IconXCircle/>, handler: () => handleDeleteNote(id)})
+    if (id) controlsMap.push({ label: 'delete', icon: <IconXCircle/>, handler: handleDeleteNote});
     return (
         <div css={{ width: 850, paddingLeft: 50, paddingRight: 50, paddingTop: 20, paddingBottom: 20 }}>
             <ToolbarManager
@@ -130,14 +141,14 @@ const TypocoolEditor = ({ note }: { note: Note}) =>  {
                 }
                 title={
                     <EditableTitle
-                        value={editorTitle}
+                        value={title}
                         placeholder={'How to make your own sushi'}
-                        onChange={(value) => { setEditorTitle(value)}}
+                        onChange={handleUpdateTitle}
                     />
                 }
                 editor={
                     <div css={{ width: 750 }}>
-                        <Editor ref={editorRef} editorState={editorState} onChange={value => setEditorState(value)} placeholder={'Write down some thoughts...'}/>
+                        <Editor ref={editorRef} editorState={editorState} onChange={handleUpdateEditorState} placeholder={'Write down some thoughts...'}/>
                     </div>
                 }
             />
@@ -151,7 +162,7 @@ export interface NoteScreenProps extends RouteComponentProps
 }
 
 /** @jsx jsx */
-function NoteEditor(props: NoteScreenProps): JSX.Element {
+function NoteScreen(props: NoteScreenProps): JSX.Element {
     const navigate = useNavigate();
     const dispatch = useDispatch();
     useEffect(() => {
@@ -159,15 +170,16 @@ function NoteEditor(props: NoteScreenProps): JSX.Element {
             dispatch(getNoteForEdition(props.noteId))
         }
 
-    }, [props.noteId]);
+    }, [dispatch, props.noteId]);
+
     if (!props.noteId) {
         navigate('/');
         return <NoteIndex path={'*'}/>
     }
-    return <TypocoolEditor />
+    return <NoteEditor />
 }
 
-export default NoteEditor
+export default NoteScreen
 
 
 

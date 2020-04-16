@@ -9,6 +9,7 @@ import 'firebase/auth'
 import { firebaseConfig } from '../firebaseConfig'
 import {verifyAuth} from "./auth/thunks";
 import editor from "./editor/reducers";
+import {loadNotesFromFirestore} from "./notes/thunks";
 
 // Initialize firebase instance
 export const firebaseApp = firebase.initializeApp(firebaseConfig)

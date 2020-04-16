@@ -10,7 +10,7 @@ import {createNote} from "../store/notes/thunks";
 
 
 /** @jsx jsx */
-function NoteIndex(props: NoteScreenProps): JSX.Element {
+function NotFound(props: NoteScreenProps): JSX.Element {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const userFirstName = useSelector((state: RootState) => state.user.firstName);
@@ -18,21 +18,20 @@ function NoteIndex(props: NoteScreenProps): JSX.Element {
         dispatch(createNote(navigate))
     }
 
-
     return (
         <div css={{ display: 'flex', flexDirection: 'column', alignItems: 'center'}}>
 
-            <img src={'drawkit-notebook-man-monochrome.svg'} alt={'notebook'} height={500} width={500}/>
-            <Text variant="h4">Welcome to <strong>Typocool</strong>, {userFirstName}</Text>
-            <Text variant="lead"> Stay cool & focused with your minimalist notepad</Text>
+            <img src={'error-404-monochrome.svg'} alt={'notebook'} height={400} width={400} css={{ marginBottom: 100, marginTop: 100}}/>
+            <Text variant="h4">Is it a bird? is it a plane? No, it's just that we didn't found the page you were looking for.</Text>
+            <Text variant="lead"> Do you want to create a new note?</Text>
             <Button
                 css={{ marginTop: 20}}
                 variant="ghost"
                 size={'lg'}
                 onClick={handleNewNote}
-            >Get started</Button>
+            > Sure, why not?</Button>
         </div>
     )
 }
 
-export default NoteIndex
+export default NotFound

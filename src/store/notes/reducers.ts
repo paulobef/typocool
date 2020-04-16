@@ -2,8 +2,7 @@ import {LOAD_NOTES, Note, NoteActionTypes, NoteState} from "./types";
 
 
 function loadNote(state: NoteState, payload: Note[]): NoteState {
-    const newNotes = state.notes.concat(payload);
-    return Object.freeze(Object.assign({}, state, { notes: newNotes }))
+    return Object.freeze(Object.assign({}, state, { notes: payload }))
 }
 
 const initialState: NoteState = Object.freeze({

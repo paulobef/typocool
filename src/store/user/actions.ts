@@ -1,7 +1,7 @@
-import {RECEIVE_USER_DATA, UserActionTypes, UserState} from "./types";
+import {RECEIVE_USER_DATA, User, UserActionTypes} from "./types";
 
 
-export const receiveUserData = (payload: UserState): UserActionTypes => {
+export const receiveUserData = (payload: User): UserActionTypes => {
     return {
         type: RECEIVE_USER_DATA,
         payload

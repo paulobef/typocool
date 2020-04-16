@@ -8,7 +8,7 @@ export function loadNoteInEditor(payload: Note): EditorActionTypes {
         payload
     }
 }
-export function updateLoadedNote(payload: { title: string, editorState: EditorState }): EditorActionTypes {
+export function updateLoadedNote(payload: { id: string; title: string; editorState: EditorState }): EditorActionTypes {
     return {
         type: UPDATE_LOADED_NOTE,
         payload

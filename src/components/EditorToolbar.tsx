@@ -1,5 +1,5 @@
-import {EditorControl, StyleControl, StyleHandler} from "../pages/NoteEditor";
-import {ButtonSize, IconButton, Layer} from "sancho";
+import {EditorControl, StyleControl, StyleHandler} from "../pages/NoteScreen";
+import {ButtonSize, IconButton, IconList, IconMoreVertical, Layer, MenuItem, MenuList, ResponsivePopover} from "sancho";
 import React from "react";
 import { jsx } from '@emotion/core'
 
@@ -13,7 +13,7 @@ interface EditorToolbarProps {
 const EditorToolbar = ({    controlsMap,
                             buttonSize } : EditorToolbarProps) => {
     return (
-        <Layer css={{
+        <div css={{
             display: 'flex',
             flexDirection: 'column',
             paddingTop: 5,
@@ -22,17 +22,20 @@ const EditorToolbar = ({    controlsMap,
             paddingLeft: 10,
             marginRight: 30,
             marginTop: 50
-        }} elevation="xs">
-            { controlsMap.map(({ icon, label, handler }: EditorControl, key: number) =>
-                <IconButton
-                    variant="ghost"
-                    key={key}
-                    icon={icon}
-                    label={label}
-                    size={buttonSize || 'sm'}
-                    onClick={handler}
-                />) }
-        </Layer>
+        }} >
+            <ResponsivePopover
+                content={
+                    <MenuList>
+                        { controlsMap.map(({ icon, label, handler }: EditorControl, key: number) =>
+                            <MenuItem key={key} contentBefore={icon} component="a" onClick={handler}>
+                                {label}
+                            </MenuItem>) }
+                    </MenuList>
+                }
+            >
+                <IconButton variant="ghost" icon={<IconMoreVertical />} label="show more" />
+            </ResponsivePopover>
+        </div>
 
     )
 };
