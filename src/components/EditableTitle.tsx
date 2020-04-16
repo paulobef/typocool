@@ -1,5 +1,5 @@
-import React, {FormEvent, MutableRefObject, RefObject, useRef, useState} from "react";
-import { useTheme} from "sancho";
+import React, {FormEvent, MutableRefObject, Fragment, useRef, useState} from "react";
+import { useTheme, Text} from "sancho";
 import { jsx } from '@emotion/core'
 
 
@@ -7,7 +7,9 @@ interface EditableTitleProps {
     value: string | null
     placeholder: string
     onKeyPress?(event: React.KeyboardEvent<HTMLHeadingElement>): void
-    onChange?(value: string | null): void
+    onChange?(value: string | null): void,
+    date: string,
+    time: string
 }
 
 function setEndOfContenteditable(contentEditableElement: Node)
@@ -24,7 +26,7 @@ function setEndOfContenteditable(contentEditableElement: Node)
 }
 
 /** @jsx jsx */
-function EditableTitle({ value, placeholder, onKeyPress, onChange }: EditableTitleProps) {
+function EditableTitle({ value, placeholder, onKeyPress, onChange, date, time }: EditableTitleProps) {
     const theme = useTheme();
     const [selectedPlaceholder, setSelectedPlaceholder] = useState(false);
     const reference: MutableRefObject<any> = useRef<HTMLHeadingElement>(null);
@@ -49,6 +51,7 @@ function EditableTitle({ value, placeholder, onKeyPress, onChange }: EditableTit
 
 
     return (
+        <Fragment>
                 <h1
                     ref={reference}
                     contentEditable={"true"}
@@ -78,6 +81,11 @@ function EditableTitle({ value, placeholder, onKeyPress, onChange }: EditableTit
                 >
                     {value || ""}
             </h1>
+            <Text css={{
+                marginTop: - 20,
+                marginBottom: 50
+            }} variant={'subtitle'} >Last saved: <strong>{date} - {time}</strong></Text>
+        </Fragment>
     )
 }
 

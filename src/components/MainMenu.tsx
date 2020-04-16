@@ -4,23 +4,25 @@ import { jsx } from '@emotion/core'
 import {
     MenuList,
     MenuItem,
+    List, ListItem,
     IconHome,
     IconSettings, Divider, IconPlus, IconUser,
 } from 'sancho'
 import NoteList from "./NoteList";
 import {RootState} from "../store";
-import {Link, useNavigate} from "@reach/router";
-import {createNote} from "../store/notes/thunks";
+import {Link, useLocation, useNavigate} from "@reach/router";
+import { createNote } from "../store/notes/thunks";
 
 
 /** @jsx jsx */
 function MainMenu(): JSX.Element {
+    const location = useLocation()
     const navigate = useNavigate()
     const notes = useSelector((state: RootState) => state.notes.notes);
     const dispatch = useDispatch();
 
     function handleNewNote() {
-        dispatch(createNote(navigate))
+        dispatch(createNote( location.pathname ,navigate))
     }
 
     return (
@@ -39,14 +41,14 @@ function MainMenu(): JSX.Element {
                 </MenuItem>
             </MenuList>
             <Divider />
-            <MenuList>
-                <MenuItem
-                    contentBefore={<IconPlus/>}
+            <List>
+                <ListItem
+                    contentAfter={<IconPlus/>}
                     onClick={handleNewNote}
-                >
-                    New
-                </MenuItem>
-            </MenuList>
+                    primary={'Create'}
+                    //secondary={'Add new note'}
+                />
+            </List>
 
             <NoteList list={notes} />
         </div>

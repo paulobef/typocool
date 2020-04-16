@@ -15,6 +15,19 @@ import NoteIndex from "./NoteIndex";
 import {getNoteForEdition} from "../store/editor/thunks";
 import {updateLoadedNote} from "../store/editor/actions";
 import {deleteNote, updateNote} from "../store/notes/thunks";
+import NotFound from "./NotFound";
+import dayjs from "dayjs";
+import dateDisplayer, {timeDisplayer} from "../utils/dateDisplayer";
+import isToday from "dayjs/plugin/isToday";
+import isYesterday from "dayjs/plugin/isYesterday";
+// @ts-ignore
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(isToday)
+dayjs.extend(isYesterday)
+dayjs.extend(relativeTime)
+
+
 
 
 export type StyleHandler = (style: string) => void
@@ -60,7 +73,8 @@ const BLOCK_TYPES: Array<StyleControl> = [
 /** @jsx jsx */
 const NoteEditor = () =>  {
     const dispatch = useDispatch();
-    const {id, title, editorState } = useSelector((state: RootState) => state.editor);
+    const navigate = useNavigate();
+    const {id, title, editorState, lastSaved } = useSelector((state: RootState) => state.editor);
     if (!editorState) throw new Error('no editor state')
     const editorRef = useRef(null);
 
@@ -68,7 +82,8 @@ const NoteEditor = () =>  {
         dispatch(updateLoadedNote({
             id,
             title: value,
-            editorState
+            editorState,
+            lastSaved
         }))
     }
 
@@ -76,7 +91,8 @@ const NoteEditor = () =>  {
         dispatch(updateLoadedNote({
             id,
             title,
-            editorState: value
+            editorState: value,
+            lastSaved
         }))
     }
 
@@ -84,7 +100,8 @@ const NoteEditor = () =>  {
         dispatch(updateLoadedNote({
             id,
             title,
-            editorState: RichUtils.toggleInlineStyle(editorState, inlineStyle)
+            editorState: RichUtils.toggleInlineStyle(editorState, inlineStyle),
+            lastSaved
         }))
     }
 
@@ -92,12 +109,14 @@ const NoteEditor = () =>  {
         dispatch(updateLoadedNote({
             id,
             title,
-            editorState: RichUtils.toggleBlockType(editorState, blockType)
+            editorState: RichUtils.toggleBlockType(editorState, blockType),
+            lastSaved
         }))
     }
 
     function handleDeleteNote() {
         dispatch(deleteNote(id))
+        navigate('/')
     }
 
     const handlePressEnter = (event: React.KeyboardEvent)  => {
@@ -109,7 +128,13 @@ const NoteEditor = () =>  {
     }
 
     function handleSaveNote() {
-        dispatch(updateNote(id, title, editorState.getCurrentContent()))
+        dispatch(updateNote(id, title, editorState.getCurrentContent(), dayjs()))
+        dispatch(updateLoadedNote({
+            id,
+            title,
+            editorState,
+            lastSaved: dayjs()
+        }));
     }
 
     const controlsMap = [
@@ -124,6 +149,7 @@ const NoteEditor = () =>  {
     return (
         <div css={{ width: 850, paddingLeft: 50, paddingRight: 50, paddingTop: 20, paddingBottom: 20 }}>
             <ToolbarManager
+                editorState={editorState}
                 onKeyPress={handlePressEnter}
                 flyingToolbar={
                     <StylingToolbar
@@ -144,6 +170,8 @@ const NoteEditor = () =>  {
                         value={title}
                         placeholder={'How to make your own sushi'}
                         onChange={handleUpdateTitle}
+                        date={dateDisplayer(lastSaved)}
+                        time={timeDisplayer(lastSaved)}
                     />
                 }
                 editor={
@@ -165,6 +193,7 @@ export interface NoteScreenProps extends RouteComponentProps
 function NoteScreen(props: NoteScreenProps): JSX.Element {
     const navigate = useNavigate();
     const dispatch = useDispatch();
+    const loadError = useSelector((state: RootState) => state.editor.loadError)
     useEffect(() => {
         if (props.noteId) {
             dispatch(getNoteForEdition(props.noteId))
@@ -175,6 +204,8 @@ function NoteScreen(props: NoteScreenProps): JSX.Element {
     if (!props.noteId) {
         navigate('/');
         return <NoteIndex path={'*'}/>
+    } else if (loadError) {
+        return <NotFound />
     }
     return <NoteEditor />
 }

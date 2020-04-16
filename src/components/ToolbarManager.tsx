@@ -1,5 +1,6 @@
-import React, {useEffect, useRef, useState, Fragment, ReactElement, forwardRef, Ref} from "react";
+import React, {useEffect, useRef, useState, ReactElement, forwardRef, Ref} from "react";
 import { jsx } from '@emotion/core'
+import {EditorState, getVisibleSelectionRect} from "draft-js";
 
 
 type ToolbarState = {
@@ -20,7 +21,8 @@ interface ToolbarManagerProps {
     flyingToolbar?: React.ComponentElement<any, any>
     fixedToolbar?: React.ComponentElement<any, any>
     title?: React.ComponentElement<any, any> | Text
-    onKeyPress?: ((event: React.KeyboardEvent<HTMLDivElement>) => void)
+    onKeyPress?: ((event: React.KeyboardEvent<HTMLDivElement>) => void),
+    editorState: EditorState
 }
 
 
@@ -48,7 +50,8 @@ function ToolbarManager({
                               title,
                               flyingToolbar,
                               fixedToolbar,
-                              onKeyPress
+                              onKeyPress,
+                              editorState
 }: ToolbarManagerProps): React.ComponentElement<any, any> {
 
     const [toolbarState, setToolbarState] = useState<ToolbarState>({
@@ -78,17 +81,18 @@ function ToolbarManager({
     }
 
     function handleOpenToolbar(): void {
-        const selection = window.getSelection();
-        if (!selection) return;
-        const range = selection.getRangeAt(0);
-        if (range.collapsed) return;
-        const position = range.getBoundingClientRect();
-        const newState: ToolbarState = {
-            x: position.x,
-            y: position.y,
-            isVisible: true
-        };
-        setToolbarState(newState)
+        setTimeout(() => {
+            const selection = editorState.getSelection();
+            if (!selection) return;
+            const position = getVisibleSelectionRect(window);
+            if(!position) return;
+            const newState: ToolbarState = {
+                x: position.left,
+                y: position.top,
+                isVisible: true
+            };
+            setToolbarState(newState)
+        })
     }
 
     useEffect(() => {

@@ -1,14 +1,18 @@
 import {ContentState} from "draft-js";
+import {Dayjs} from "dayjs"
+
 
 export const LOAD_NOTES = 'app/notes/load';
 
 
+
 // STATE TYPES
 export class Note {
-    constructor(readonly id: string, readonly title: string, readonly content: ContentState, readonly authorId: string) {}
+    constructor(readonly id: string, readonly title: string, readonly content: ContentState, readonly authorId: string, readonly lastSaved: Dayjs) {
+    }
 
     toString(): string {
-        return `authorId: ${this.authorId} title: ${this.title}, content: ${this.content.toString()}`;
+        return `authorId: ${this.authorId} title: ${this.title}, content: ${this.content.toString()}, lastSaved: ${this.lastSaved.toJSON()}`;
     }
 }
 

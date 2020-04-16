@@ -3,7 +3,14 @@ import {firestore} from "./index";
 import firebase from "firebase";
 import {Note} from "./notes/types";
 import {convertFromRaw, convertToRaw} from "draft-js";
-import {navigate} from "@reach/router";
+import dayjs from "dayjs";
+import isToday from "dayjs/plugin/isToday";
+import isYesterday from "dayjs/plugin/isYesterday";
+import relativeTime from "dayjs/plugin/relativeTime";
+
+dayjs.extend(isToday)
+dayjs.extend(isYesterday)
+dayjs.extend(relativeTime)
 
 
 type DocumentData = firebase.firestore.DocumentData;
@@ -38,7 +45,7 @@ export const getUserFromFirestore = async (uid: string): Promise<User> => {
 
 export const noteConverter = {
     toFirestore(note: Note): DocumentData {
-        return { title: note.title, content: convertToRaw(note.content), authorId: note.authorId};
+        return { title: note.title, content: convertToRaw(note.content), authorId: note.authorId, lastSaved: note.lastSaved};
     },
     fromFirestore(
         snapshot: QueryDocumentSnapshot,
@@ -46,7 +53,7 @@ export const noteConverter = {
     ): Note {
         const data = snapshot.data(options)!;
         const id = snapshot.id!;
-        return new Note(id, data.title, convertFromRaw(data.content), data.authorId);
+        return new Note(id, data.title, convertFromRaw(data.content), data.authorId, dayjs(data.lastSaved));
     }
 };
 
@@ -58,6 +65,6 @@ export const getNotesFromFirestore = async (uid: string): Promise<Array<Note>> =
 export const getOneNoteFromFirestore = async (id: string): Promise<Note | undefined> => {
     if (!id) throw new Error('no id')
     const noteSnap = await firestore.collection('notes').withConverter(noteConverter).doc(id).get();
-    if(!noteSnap.exists)  { return  }
+    if(!noteSnap.exists)  { return undefined }
     return noteSnap.data()
 };
