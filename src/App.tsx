@@ -1,14 +1,15 @@
 import React, {useState, Fragment, useEffect} from 'react';
 import './App.css';
 import SidebarLayout from "./components/SidebarLayout";
-import NoteScreen from "./pages/NoteScreen";
+import Note from "./pages/Note";
 import MainMenu from "./components/MainMenu";
 import { Router} from "@reach/router";
 import NoteIndex from "./pages/NoteIndex";
 import {RootState} from "./store";
 import {useSelector} from "react-redux";
-import SignInOrUp from "./pages/SignInOrUp";
+import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
+import Settings from "./pages/Settings";
 
 
 function App () {
@@ -21,8 +22,9 @@ function App () {
                     mainScreenComponent={
                         <Router>
                             <NotFound default />
-                            <NoteScreen path={'notes/:noteId'}/>
+                            <Note path={'notes/:noteId'}/>
                             <NoteIndex path={'/'}/>
+                            <Settings path={'/settings'}/>
                         </Router>
                     }
                     sidebarComponent={<MainMenu />}
@@ -31,7 +33,7 @@ function App () {
                 />
         )
     } else {
-        return <SignInOrUp />
+        return <Login />
     }
 
 

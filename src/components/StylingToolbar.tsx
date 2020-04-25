@@ -1,7 +1,7 @@
 import React from "react";
 import { IconButton, Layer } from "sancho";
 import { jsx } from '@emotion/core'
-import {StyleControl, StyleHandler} from "../pages/NoteScreen";
+import {StyleControl, StyleHandler} from "../pages/Note";
 import { EditorState } from "draft-js";
 
 

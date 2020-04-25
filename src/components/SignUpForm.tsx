@@ -7,7 +7,7 @@ import {useNavigate} from "@reach/router";
 
 
 /** @jsx jsx */
-export default function CreateAccount() {
+export default function SignUpForm() {
     const theme = useTheme();
     const dispatch = useDispatch();
     const [form, setForm] = useState({

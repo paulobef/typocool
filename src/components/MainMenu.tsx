@@ -6,7 +6,7 @@ import {
     MenuItem,
     List, ListItem,
     IconHome,
-    IconSettings, Divider, IconPlus, IconUser,
+    IconSettings, Divider, IconPlus, IconUser, Input, IconSearch,
 } from 'sancho'
 import NoteList from "./NoteList";
 import {RootState} from "../store";
@@ -22,7 +22,7 @@ function MainMenu(): JSX.Element {
     const dispatch = useDispatch();
 
     function handleNewNote() {
-        dispatch(createNote( location.pathname ,navigate))
+        dispatch(createNote( location.pathname, navigate))
     }
 
     return (
@@ -33,21 +33,30 @@ function MainMenu(): JSX.Element {
                         Home
                     </MenuItem>
                 </Link>
-                <MenuItem contentBefore={<IconSettings />} component="a" href="#">
-                    Settings
-                </MenuItem>
-                <MenuItem contentBefore={<IconUser />} component="a" href="#">
+                <Link css={{ textDecoration: 'none' }} to={'/settings'}>
+                    <MenuItem contentBefore={<IconSettings />} >
+                        Settings
+                    </MenuItem>
+                </Link>
+                <MenuItem contentBefore={<IconUser />} >
                     Profile
                 </MenuItem>
             </MenuList>
             <Divider />
             <List>
                 <ListItem
-                    contentAfter={<IconPlus/>}
+                    contentBefore={<IconPlus/>}
                     onClick={handleNewNote}
-                    primary={'Create'}
+                    primary={'New'}
                     //secondary={'Add new note'}
-                />
+                /> {/* TODO: Implement Full text search https://firebase.google.com/docs/firestore/solutions/search
+                <ListItem
+                    primary={<Input
+                        placeholder={'Search...'}
+                    />}
+                    contentAfter={<IconSearch/>}
+                    interactive={false}
+                /> */}
             </List>
 
             <NoteList list={notes} />

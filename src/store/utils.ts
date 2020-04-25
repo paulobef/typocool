@@ -1,12 +1,15 @@
 import {User} from "./user/types";
 import {firestore} from "./index";
 import firebase from "firebase";
-import {Note} from "./notes/types";
+import {Note, NoteState} from "./notes/types";
 import {convertFromRaw, convertToRaw} from "draft-js";
 import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
 import relativeTime from "dayjs/plugin/relativeTime";
+import {Settings, SettingsState} from "./settings/types";
+import {AppStateWithLoading} from "./types";
+import {LoadedNoteState} from "./editor/types";
 
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
@@ -17,7 +20,7 @@ type DocumentData = firebase.firestore.DocumentData;
 type QueryDocumentSnapshot = firebase.firestore.QueryDocumentSnapshot;
 type SnapshotOptions = firebase.firestore.SnapshotOptions;
 
-// USER
+// Converters
 
 export const userConverter = {
     toFirestore(user: User): DocumentData {
@@ -33,16 +36,6 @@ export const userConverter = {
     }
 };
 
-export const getUserFromFirestore = async (uid: string): Promise<User> => {
-    const userRef = await firestore.collection('users').withConverter(userConverter).doc(uid).get();
-    const dbUser = userRef.data();
-    if (!dbUser) throw new Error('no user');
-    console.log(dbUser.toString());
-    return dbUser
-}
-
-// NOTES
-
 export const noteConverter = {
     toFirestore(note: Note): DocumentData {
         return { title: note.title, content: convertToRaw(note.content), authorId: note.authorId, lastSaved: note.lastSaved};
@@ -57,8 +50,31 @@ export const noteConverter = {
     }
 };
 
+export const settingsConverter = {
+    toFirestore(settings: Settings): DocumentData {
+        return { fontSize: settings.fontSize, fontFamily: settings.fontFamily, lastSaved: settings.lastSaved};
+    },
+    fromFirestore(
+        snapshot: QueryDocumentSnapshot,
+        options: SnapshotOptions
+    ): Settings {
+        const data = snapshot.data(options)!;
+        return new Settings(data.fontSize, data.fontFamily, dayjs(data.lastSaved));
+    }
+};
+
+export const getUserFromFirestore = async (uid: string): Promise<User> => {
+    const userRef = await firestore.collection('users').withConverter(userConverter).doc(uid).get();
+    const dbUser = userRef.data();
+    if (!dbUser) throw new Error('no user');
+    console.log(dbUser.toString());
+    return dbUser
+}
+
+
+
 export const getNotesFromFirestore = async (uid: string): Promise<Array<Note>> => {
-    const notesSnap = await firestore.collection('notes').withConverter(noteConverter).where('authorId', '==', uid).limit(50).get();
+    const notesSnap = await firestore.collection('notes').withConverter(noteConverter).where('authorId', '==', uid).orderBy('lastSaved', 'desc').limit(50).get();
     return notesSnap.docs.map(note => note.data());
 };
 
@@ -68,3 +84,12 @@ export const getOneNoteFromFirestore = async (id: string): Promise<Note | undefi
     if(!noteSnap.exists)  { return undefined }
     return noteSnap.data()
 };
+
+export function startLoading(state: AppStateWithLoading, statusName: string): AppStateWithLoading {
+    const status = { ...state.status, ...{ [statusName]: true } }
+    return <NoteState | LoadedNoteState | SettingsState>Object.freeze({...state, status})
+}
+export function endLoadingWithError(state: AppStateWithLoading, loadingStateName: string, errorStateName: string): AppStateWithLoading {
+    const status = { ...state.status, ...{ [loadingStateName]: false, [errorStateName]: true }}
+    return <NoteState | LoadedNoteState | SettingsState>Object.freeze({...state, status})
+}

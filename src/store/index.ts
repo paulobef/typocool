@@ -9,7 +9,9 @@ import 'firebase/auth'
 import { firebaseConfig } from '../firebaseConfig'
 import {verifyAuth} from "./auth/thunks";
 import editor from "./editor/reducers";
-import {loadNotesFromFirestore} from "./notes/thunks";
+import settings from "./settings/reducers";
+
+export const LIMIT = 5
 
 // Initialize firebase instance
 export const firebaseApp = firebase.initializeApp(firebaseConfig)
@@ -23,7 +25,8 @@ const noteApp = combineReducers({
     notes,
     auth,
     user,
-    editor
+    editor,
+    settings
 })
 export type RootState = ReturnType<typeof noteApp>
 

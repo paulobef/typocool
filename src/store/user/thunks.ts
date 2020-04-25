@@ -3,6 +3,7 @@ import {AppThunkAction} from "../types";
 import {receiveLogin} from "../auth/actions";
 import {receiveUserData} from "./actions";
 import {getUserFromFirestore} from "../utils";
+import dayjs from "dayjs";
 
 
 
@@ -19,15 +20,17 @@ export const createUser = (firstName: string, lastName: string, email: string, p
             }
         }});
     try {
-        // We don't use withConverter.toFirestore method when creating/setting data
-        // because we want firebase to use the uid as document id and therefore don't pass the id to set() or add()
-        // which expect a complete User class and thus throw type error
+
         const { user } = await fireauth.createUserWithEmailAndPassword(email, password)
         if (user !== null) {
             firestore.collection('users').doc(user.uid).set({
                 email,
                 firstName,
                 lastName
+            });
+            firestore.collection('settings').doc(user.uid).set({
+                fontSize: 12,
+                lastSaved: dayjs().toISOString()
             });
         }
     } catch(error) {

@@ -7,7 +7,7 @@ import {useNavigate} from "@reach/router";
 
 
 /** @jsx jsx */
-export default function Login() {
+export default function SignInForm() {
     const theme = useTheme();
     const dispatch = useDispatch();
     const [email, setEmail] = useState()

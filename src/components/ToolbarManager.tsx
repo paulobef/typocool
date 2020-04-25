@@ -1,6 +1,7 @@
 import React, {useEffect, useRef, useState, ReactElement, forwardRef, Ref} from "react";
 import { jsx } from '@emotion/core'
 import {EditorState, getVisibleSelectionRect} from "draft-js";
+import {Portal} from "sancho";
 
 
 type ToolbarState = {
@@ -32,16 +33,20 @@ export const ToolbarWrapper = forwardRef(({
                                               pageY,
                                               visible,
                                               children
-                                          }: ToolbarWrapperProps, ref: Ref<HTMLDivElement>): JSX.Element =>
-    <div ref={ref} css={{
+
+                                       }: ToolbarWrapperProps, ref: Ref<HTMLDivElement>): JSX.Element =>
+
+    <Portal>
+        <div ref={ref} css={{
         position: 'fixed',
         left: pageX,
         top: pageY,
         zIndex: 300,
         display: visible ? 'block' : 'none',
-    }}>
-        {children}
-    </div>);
+        }}>
+            {children}
+        </div>
+    </ Portal> );
 
 
 /** @jsx jsx */
@@ -68,9 +73,8 @@ function ToolbarManager({
             return;
         }
 
-        // @ts-ignore
-        // Because .contains() accept only Nodes | null and event.target is of EventTarget | null type
-        if (toolbarRef.current && toolbarRef.current.contains(event.target)) {
+        // type assertion - cause contains() only accepts Nodes | null and event.target is of EventTarget | null type
+        if (toolbarRef.current && toolbarRef.current.contains(event.target as Node)) {
             console.log('clicked on the toolbar');
             return;
         }
@@ -103,7 +107,7 @@ function ToolbarManager({
     });
 
     return (
-        <div onKeyPress={onKeyPress} css={ {display: 'flex', flexDirection: 'row'} }>
+        <div  onKeyPress={onKeyPress} css={ {display: 'flex', flexDirection: 'row'} }>
             { flyingToolbar ?
                 <ToolbarWrapper
                     ref={toolbarRef}

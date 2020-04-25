@@ -1,6 +1,7 @@
 import React, {FormEvent, MutableRefObject, Fragment, useRef, useState} from "react";
 import { useTheme, Text} from "sancho";
 import { jsx } from '@emotion/core'
+import ContentEditable from "react-contenteditable";
 
 
 interface EditableTitleProps {
@@ -10,19 +11,6 @@ interface EditableTitleProps {
     onChange?(value: string | null): void,
     date: string,
     time: string
-}
-
-function setEndOfContenteditable(contentEditableElement: Node)
-{
-    let range,selection;
-    if(!document.createRange) throw new Error('browser not supported for caret postioning') //Firefox, Chrome, Opera, Safari, IE 9+
-    range = document.createRange();//Create a range (a range is a like the selection but invisible)
-    range.selectNodeContents(contentEditableElement);//Select the entire contents of the element with the range
-    range.collapse(false);//collapse the range to the end point. false means collapse to end rather than the start
-    selection = window.getSelection();//get the selection object (allows you to change selection)
-    selection?.removeAllRanges();//remove any selections already made
-    selection?.addRange(range);//make the range you have just created the visible selection
-
 }
 
 /** @jsx jsx */
@@ -38,9 +26,9 @@ function EditableTitle({ value, placeholder, onKeyPress, onChange, date, time }:
         })
     }
 
-    function handleInput(event: FormEvent<HTMLHeadingElement>): void {
+    function handleChange(event: FormEvent<HTMLHeadingElement>): void {
         if (onChange) onChange(event.currentTarget.textContent)
-        setEndOfContenteditable(reference.current)
+        //setEndOfContenteditable(reference.current)
     }
 
     function handleFocus(): void {
@@ -52,16 +40,17 @@ function EditableTitle({ value, placeholder, onKeyPress, onChange, date, time }:
 
     return (
         <Fragment>
-                <h1
-                    ref={reference}
-                    contentEditable={"true"}
+                <ContentEditable
+                    innerRef={reference}
+                    html={value || ""}
                     placeholder={placeholder}
-                    onInput={handleInput}
+                    onChange={handleChange}
                     onKeyPress={onKeyPress}
                     onFocus={handleFocus}
+                    tagName='h1'
                     css={{
                             fontSize: theme.fontSizes["7"],
-                            fontWeight: theme.fontWeights.heading,
+                            fontWeight: theme.fontWeights.heading + 100,
                             color: theme.colors.text.heading,
                             borderTopStyle: 'hidden',
                             borderLeftStyle: 'hidden',
@@ -78,9 +67,9 @@ function EditableTitle({ value, placeholder, onKeyPress, onChange, date, time }:
                                 outline: 'none',
                             },
                         }}
-                >
-                    {value || ""}
-            </h1>
+                />
+
+
             <Text css={{
                 marginTop: - 20,
                 marginBottom: 50

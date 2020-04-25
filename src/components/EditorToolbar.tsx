@@ -1,4 +1,4 @@
-import {EditorControl, StyleControl, StyleHandler} from "../pages/NoteScreen";
+import {EditorControl, StyleControl, StyleHandler} from "../pages/Note";
 import {ButtonSize, IconButton, IconList, IconMoreVertical, Layer, MenuItem, MenuList, ResponsivePopover} from "sancho";
 import React from "react";
 import { jsx } from '@emotion/core'
@@ -32,6 +32,7 @@ const EditorToolbar = ({    controlsMap,
                             </MenuItem>) }
                     </MenuList>
                 }
+                placement={'left'}
             >
                 <IconButton variant="ghost" icon={<IconMoreVertical />} label="show more" />
             </ResponsivePopover>

@@ -11,7 +11,8 @@ import {
 import {AppThunkAction} from "../types";
 import { receiveUserData } from "../user/actions";
 import { getUserFromFirestore } from "../utils";
-import {loadNotesFromFirestore} from "../notes/thunks";
+import {listenToNotesUpdates} from "../notes/thunks";
+import {listenToSettingsUpdates} from "../settings/thunks";
 
 
 
@@ -59,7 +60,8 @@ export const verifyAuth = (): AppThunkAction => async dispatch => {
                 dispatch(receiveLogin(user));
                 const dbUser = await getUserFromFirestore(user.uid);
                 dispatch(receiveUserData(dbUser));
-                dispatch(loadNotesFromFirestore())
+                dispatch(listenToNotesUpdates())
+                dispatch(listenToSettingsUpdates())
                 dispatch(verifySuccess());
             }});
     } catch (error) {

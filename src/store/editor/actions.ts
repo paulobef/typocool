@@ -1,4 +1,11 @@
-import {LOAD_NOTE, EditorActionTypes, UPDATE_LOADED_NOTE, LOAD_ERROR, LoadedNoteState} from "./types";
+import {
+    LOAD_NOTE,
+    EditorActionTypes,
+    UPDATE_LOADED_NOTE,
+    LoadedNote,
+    ERROR_LOADING_NOTE,
+    START_LOADING_NOTE
+} from "./types";
 import {Note} from "../notes/types";
 import { EditorState } from 'draft-js'
 
@@ -11,11 +18,17 @@ export function loadNoteInEditor(payload: Note): EditorActionTypes {
 
 export function loadError(): EditorActionTypes {
     return {
-        type: LOAD_ERROR
+        type: ERROR_LOADING_NOTE
     }
 }
 
-export function updateLoadedNote(payload: LoadedNoteState): EditorActionTypes {
+export function startLoading(): EditorActionTypes {
+    return {
+        type: START_LOADING_NOTE
+    }
+}
+
+export function updateLoadedNote(payload: LoadedNote): EditorActionTypes {
     return {
         type: UPDATE_LOADED_NOTE,
         payload

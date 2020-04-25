@@ -1,16 +1,16 @@
 import React, { useEffect, useRef, useState } from 'react';
 import {Editor, EditorState, RichUtils} from 'draft-js';
-import {IconBold, IconCode, IconItalic, IconList, IconSave, IconXCircle} from "sancho";
+import {IconBold, IconCode, IconItalic, IconList, IconSave, IconXCircle, Skeleton, Text, useTheme} from "sancho";
 import { jsx } from '@emotion/core'
 import { RouteComponentProps, useNavigate} from '@reach/router'
-import ToolbarManager from "../components/ToolbarManager";
-import EditableTitle from "../components/EditableTitle";
-import StylingToolbar from "../components/StylingToolbar";
 import '../App.css'
 import 'draft-js/dist/Draft.css'
 import {useDispatch, useSelector} from "react-redux";
 import { RootState } from "../store";
 import EditorToolbar from "../components/EditorToolbar";
+import ToolbarManager from "../components/ToolbarManager";
+import EditableTitle from "../components/EditableTitle";
+import StylingToolbar from "../components/StylingToolbar";
 import NoteIndex from "./NoteIndex";
 import {getNoteForEdition} from "../store/editor/thunks";
 import {updateLoadedNote} from "../store/editor/actions";
@@ -23,11 +23,10 @@ import isYesterday from "dayjs/plugin/isYesterday";
 // @ts-ignore
 import relativeTime from "dayjs/plugin/relativeTime";
 
+
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
 dayjs.extend(relativeTime)
-
-
 
 
 export type StyleHandler = (style: string) => void
@@ -70,14 +69,20 @@ const BLOCK_TYPES: Array<StyleControl> = [
 
 ];
 
+
 /** @jsx jsx */
 const NoteEditor = () =>  {
     const dispatch = useDispatch();
+    const theme = useTheme()
     const navigate = useNavigate();
-    const {id, title, editorState, lastSaved } = useSelector((state: RootState) => state.editor);
+    const {id, title, editorState, lastSaved } = useSelector((state: RootState) => state.editor.editor);
+    const { fontSize, fontFamily } = useSelector((state: RootState) => state.settings.settings);
+    const { isLoading } = useSelector((state: RootState) => state.editor.status);
     if (!editorState) throw new Error('no editor state')
     const editorRef = useRef(null);
 
+
+    //TODO: refactor all these handlers that use updateLoadedNote into one
     function handleUpdateTitle(value: string) {
         dispatch(updateLoadedNote({
             id,
@@ -133,7 +138,7 @@ const NoteEditor = () =>  {
             id,
             title,
             editorState,
-            lastSaved: dayjs()
+            lastSaved: dayjs() // we update the date to now
         }));
     }
 
@@ -143,9 +148,24 @@ const NoteEditor = () =>  {
             icon: <IconSave/>,
             handler: handleSaveNote
         },
-    ];
+    ]; if (id) controlsMap.push(
+        {
+            label: 'delete',
+            icon: <IconXCircle/>,
+            handler: handleDeleteNote
+        }
+    );
 
-    if (id) controlsMap.push({ label: 'delete', icon: <IconXCircle/>, handler: handleDeleteNote});
+    if (isLoading){
+        return (
+            <div css={{ width: 850, paddingLeft: 50, paddingRight: 50, paddingTop: 20, paddingBottom: 20 }}>
+                <div css={{ width: 750, marginLeft: 80, marginTop: 50 }}>
+                    <Text variant={'h1'}><Skeleton animated /></Text>
+                    <Text css={{ width: 200 }} variant={'subtitle'}><Skeleton animated /></Text>
+                </div>
+            </div>
+        )
+    }
     return (
         <div css={{ width: 850, paddingLeft: 50, paddingRight: 50, paddingTop: 20, paddingBottom: 20 }}>
             <ToolbarManager
@@ -166,17 +186,24 @@ const NoteEditor = () =>  {
                     />
                 }
                 title={
-                    <EditableTitle
-                        value={title}
-                        placeholder={'How to make your own sushi'}
-                        onChange={handleUpdateTitle}
-                        date={dateDisplayer(lastSaved)}
-                        time={timeDisplayer(lastSaved)}
-                    />
+                    <div css={{ fontFamily: fontFamily === 'Serif' ? 'Georgia' : theme.fonts.base}}>
+                        <EditableTitle
+                            value={title}
+                            placeholder={'How to make raviolis'}
+                            onChange={handleUpdateTitle}
+                            date={dateDisplayer(lastSaved)}
+                            time={timeDisplayer(lastSaved)}
+                        />
+                    </div>
                 }
                 editor={
-                    <div css={{ width: 750 }}>
-                        <Editor ref={editorRef} editorState={editorState} onChange={handleUpdateEditorState} placeholder={'Write down some thoughts...'}/>
+                    <div css={{ width: 750, lineHeight: 2, fontSize: fontSize, fontFamily: fontFamily === 'Serif' ? 'Georgia' : theme.fonts.base }}>
+                        <Editor
+                            ref={editorRef}
+                            editorState={editorState}
+                            onChange={handleUpdateEditorState}
+                            placeholder={'Write down some thoughts...'}
+                        />
                     </div>
                 }
             />
@@ -190,10 +217,10 @@ export interface NoteScreenProps extends RouteComponentProps
 }
 
 /** @jsx jsx */
-function NoteScreen(props: NoteScreenProps): JSX.Element {
+function Note(props: NoteScreenProps): JSX.Element {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const loadError = useSelector((state: RootState) => state.editor.loadError)
+    const loadError = useSelector((state: RootState) => state.editor.status.loadError)
     useEffect(() => {
         if (props.noteId) {
             dispatch(getNoteForEdition(props.noteId))
@@ -210,7 +237,7 @@ function NoteScreen(props: NoteScreenProps): JSX.Element {
     return <NoteEditor />
 }
 
-export default NoteScreen
+export default Note
 
 
 
