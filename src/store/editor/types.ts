@@ -3,6 +3,7 @@ import { EditorState } from 'draft-js'
 import {Dayjs} from 'dayjs'
 
 export const LOAD_NOTE = 'app/editor/load';
+export const VISIT_NOTE = 'app/editor/visit'
 export const ERROR_LOADING_NOTE = 'app/editor/error';
 export const START_LOADING_NOTE = 'app/editor/start';
 export const UPDATE_LOADED_NOTE = 'app/editor/update';
@@ -10,6 +11,10 @@ export const UPDATE_LOADED_NOTE = 'app/editor/update';
 interface loadNoteAction {
     type: typeof LOAD_NOTE
     payload: Note
+}
+
+interface visitNoteAction {
+    type: typeof VISIT_NOTE
 }
 
 interface loadErrorAction {
@@ -27,6 +32,7 @@ interface updateLoadedNoteAction {
 
 export interface LoadedNoteState {
     editor: LoadedNote
+    visited: boolean
     status: { loadError: boolean, isLoading: boolean }
 }
 
@@ -35,7 +41,6 @@ export interface LoadedNote {
     title: string
     lastSaved: Dayjs
     editorState: EditorState
-    loadError?: boolean
 }
 
-export type EditorActionTypes = loadNoteAction | updateLoadedNoteAction | loadErrorAction | startLoadingAction
+export type EditorActionTypes = loadNoteAction | updateLoadedNoteAction | loadErrorAction | startLoadingAction | visitNoteAction

@@ -4,15 +4,19 @@ import {
     UPDATE_LOADED_NOTE,
     LoadedNote,
     ERROR_LOADING_NOTE,
-    START_LOADING_NOTE
+    START_LOADING_NOTE, VISIT_NOTE
 } from "./types";
 import {Note} from "../notes/types";
-import { EditorState } from 'draft-js'
 
 export function loadNoteInEditor(payload: Note): EditorActionTypes {
     return {
         type: LOAD_NOTE,
         payload
+    }
+}
+export function visitLoadedNote(): EditorActionTypes {
+    return {
+        type: VISIT_NOTE,
     }
 }
 

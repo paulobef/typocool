@@ -1,4 +1,4 @@
-import React, {Fragment, useRef} from 'react'
+import React, {Fragment, ReactElement, useRef} from 'react'
 import {List, ListItem, ScrollView, useTheme, Button, Skeleton, useInfiniteScroll} from "sancho";
 import { Link } from '@reach/router'
 import { jsx } from '@emotion/core'
@@ -23,8 +23,15 @@ function NoteList({ list }: NoteListProps) {
         if (scrollViewRef.current.scrollHeight - scrollViewRef.current.scrollTop === scrollViewRef.current.clientHeight) {
             dispatch(fetchMoreNotes())
         }
+    }
 
 
+    const skeletons = (skeleton: ReactElement) => {
+        let elements = []
+        for (let i = 0; i < 10; i++) {
+            elements.push(skeleton)
+        }
+        return elements
     }
     const loadedNoteId = useSelector((state: RootState) => state.editor.editor.id)
     return (
@@ -32,54 +39,10 @@ function NoteList({ list }: NoteListProps) {
             <List >
                 { status.isLoadingInit ?
                     <Fragment>
-                        <ListItem
+                        {skeletons(<ListItem
                             primary={ <Skeleton />}
                             secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
-                        <ListItem
-                            primary={ <Skeleton />}
-                            secondary={ <Skeleton />}
-                            wrap={false} />
+                            wrap={false} />)}
                     </Fragment>
                                             :
                     list.map((item: any) =>

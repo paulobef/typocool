@@ -10,7 +10,7 @@ interface EditorToolbarProps {
 }
 
 /** @jsx jsx */
-const EditorToolbar = ({    controlsMap,
+const NoteToolbar = ({    controlsMap,
                             buttonSize } : EditorToolbarProps) => {
     return (
         <div css={{
@@ -41,4 +41,4 @@ const EditorToolbar = ({    controlsMap,
     )
 };
 
-export default EditorToolbar
+export default NoteToolbar

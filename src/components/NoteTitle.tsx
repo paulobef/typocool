@@ -14,7 +14,7 @@ interface EditableTitleProps {
 }
 
 /** @jsx jsx */
-function EditableTitle({ value, placeholder, onKeyPress, onChange, date, time }: EditableTitleProps) {
+function NoteTitle({ value, placeholder, onKeyPress, onChange, date, time }: EditableTitleProps) {
     const theme = useTheme();
     const [selectedPlaceholder, setSelectedPlaceholder] = useState(false);
     const reference: MutableRefObject<any> = useRef<HTMLHeadingElement>(null);
@@ -78,4 +78,4 @@ function EditableTitle({ value, placeholder, onKeyPress, onChange, date, time }:
     )
 }
 
-export default EditableTitle
+export default NoteTitle

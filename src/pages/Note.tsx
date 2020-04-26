@@ -1,32 +1,40 @@
-import React, { useEffect, useRef, useState } from 'react';
-import {Editor, EditorState, RichUtils} from 'draft-js';
+import React, { useEffect, useRef, Fragment } from 'react';
+import { EditorState, RichUtils} from 'draft-js';
+import Editor from 'draft-js-plugins-editor'
+import createInlineToolbarPlugin, {ToolbarChildrenProps} from 'draft-js-inline-toolbar-plugin';
+import {
+    ItalicButton,
+    BoldButton,
+    UnorderedListButton, DraftJsButtonProps, DraftJsStyleButtonType,
+} from 'draft-js-buttons'
 import {IconBold, IconCode, IconItalic, IconList, IconSave, IconXCircle, Skeleton, Text, useTheme} from "sancho";
 import { jsx } from '@emotion/core'
 import { RouteComponentProps, useNavigate} from '@reach/router'
 import '../App.css'
 import 'draft-js/dist/Draft.css'
+import 'draft-js-inline-toolbar-plugin/lib/plugin.css';
 import {useDispatch, useSelector} from "react-redux";
 import { RootState } from "../store";
-import EditorToolbar from "../components/EditorToolbar";
-import ToolbarManager from "../components/ToolbarManager";
-import EditableTitle from "../components/EditableTitle";
-import StylingToolbar from "../components/StylingToolbar";
+import NoteToolbar from "../components/NoteToolbar";
+import NoteTitle from "../components/NoteTitle";
 import NoteIndex from "./NoteIndex";
 import {getNoteForEdition} from "../store/editor/thunks";
-import {updateLoadedNote} from "../store/editor/actions";
+import {updateLoadedNote, visitLoadedNote} from "../store/editor/actions";
 import {deleteNote, updateNote} from "../store/notes/thunks";
 import NotFound from "./NotFound";
 import dayjs from "dayjs";
 import dateDisplayer, {timeDisplayer} from "../utils/dateDisplayer";
 import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
-// @ts-ignore
 import relativeTime from "dayjs/plugin/relativeTime";
-
+import '../styles/inline-toolbar.css'
+type Timeout = NodeJS.Timeout;
 
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
 dayjs.extend(relativeTime)
+
+
 
 
 export type StyleHandler = (style: string) => void
@@ -43,81 +51,65 @@ export type EditorControl = {
     label: string
 }
 
-const INLINE_STYLES: Array<StyleControl> = [
-    {
-        label: 'Bold',
-        style: 'BOLD',
-        icon: <IconBold/>
+const inlineToolbarPlugin = createInlineToolbarPlugin( {
+    theme: {
+        toolbarStyles: {
+            toolbar: 'inline-toolbar',
+        },
+        buttonStyles: {
+            button: 'inline-toolbar-button',
+            buttonWrapper: 'inline-toolbar-button-wrapper',
+            active: 'inline-toolbar-button-active',
+        },
     },
-    {
-        label: 'Italic',
-        style: 'ITALIC',
-        icon: <IconItalic/>
-    }
-]
-const BLOCK_TYPES: Array<StyleControl> = [
-    {
-        label: 'Unordered List Item',
-        style: 'unordered-list-item',
-        icon: <IconList/>
-    },
-    {
-        label: 'Code Block',
-        style: 'code-block',
-        icon: <IconCode/>
-    },
+});
+const { InlineToolbar } = inlineToolbarPlugin
 
-];
-
+let timerID: Timeout;
 
 /** @jsx jsx */
 const NoteEditor = () =>  {
     const dispatch = useDispatch();
     const theme = useTheme()
     const navigate = useNavigate();
-    const {id, title, editorState, lastSaved } = useSelector((state: RootState) => state.editor.editor);
+    const { editor, visited } = useSelector((state: RootState) => state.editor);
+    const {id, title, editorState, lastSaved } = editor
     const { fontSize, fontFamily } = useSelector((state: RootState) => state.settings.settings);
     const { isLoading } = useSelector((state: RootState) => state.editor.status);
     if (!editorState) throw new Error('no editor state')
     const editorRef = useRef(null);
 
 
-    //TODO: refactor all these handlers that use updateLoadedNote into one
     function handleUpdateTitle(value: string) {
+        clearTimeout(timerID)
+        timerID = setTimeout(() => {
+            if(id === "") return
+            if (!visited) return
+            dispatch(updateNote(id, value, editorState.getCurrentContent(), dayjs()))
+        }, 1000)
         dispatch(updateLoadedNote({
             id,
             title: value,
             editorState,
-            lastSaved
+            lastSaved: visited ? dayjs() : lastSaved
         }))
     }
 
     function handleUpdateEditorState(value: EditorState) {
+        clearTimeout(timerID)
+        timerID = setTimeout(() => {
+            if(id === "") return
+            if (!visited) return
+            dispatch(updateNote(id, title, value.getCurrentContent(), dayjs()))
+        }, 3000)
         dispatch(updateLoadedNote({
             id,
             title,
             editorState: value,
-            lastSaved
+            lastSaved: visited ? dayjs() : lastSaved
         }))
     }
 
-    function handleToggleInlineStyle(inlineStyle: string) {
-        dispatch(updateLoadedNote({
-            id,
-            title,
-            editorState: RichUtils.toggleInlineStyle(editorState, inlineStyle),
-            lastSaved
-        }))
-    }
-
-    function handleToggleBlockType(blockType: string) {
-        dispatch(updateLoadedNote({
-            id,
-            title,
-            editorState: RichUtils.toggleBlockType(editorState, blockType),
-            lastSaved
-        }))
-    }
 
     function handleDeleteNote() {
         dispatch(deleteNote(id))
@@ -142,13 +134,7 @@ const NoteEditor = () =>  {
         }));
     }
 
-    const controlsMap = [
-        {
-            label: 'save',
-            icon: <IconSave/>,
-            handler: handleSaveNote
-        },
-    ]; if (id) controlsMap.push(
+    const controlsMap = []; if (id) controlsMap.push(
         {
             label: 'delete',
             icon: <IconXCircle/>,
@@ -166,28 +152,17 @@ const NoteEditor = () =>  {
             </div>
         )
     }
+
     return (
         <div css={{ width: 850, paddingLeft: 50, paddingRight: 50, paddingTop: 20, paddingBottom: 20 }}>
-            <ToolbarManager
-                editorState={editorState}
-                onKeyPress={handlePressEnter}
-                flyingToolbar={
-                    <StylingToolbar
-                        editorState={editorState}
-                        inlineStyleHandler={handleToggleInlineStyle}
-                        blockTypeHandler={handleToggleBlockType}
-                        inlineStyles={INLINE_STYLES}
-                        blockTypes={BLOCK_TYPES}
-                    />
-                }
-                fixedToolbar={
-                    <EditorToolbar
-                        controlsMap={controlsMap}
-                    />
-                }
-                title={
+            <div css={ {display: 'flex', flexDirection: 'row'}}>
+                <div css={{ alignSelf: 'flex-start', position: 'sticky', top: 0 }}>
+                    <NoteToolbar controlsMap={controlsMap} />
+                </div>
+                <div onClick={() => dispatch(visitLoadedNote())} css={ {display: 'flex', flexDirection: 'column'} }>
                     <div css={{ fontFamily: fontFamily === 'Serif' ? 'Georgia' : theme.fonts.base}}>
-                        <EditableTitle
+                        <NoteTitle
+                            onKeyPress={handlePressEnter}
                             value={title}
                             placeholder={'How to make raviolis'}
                             onChange={handleUpdateTitle}
@@ -195,18 +170,27 @@ const NoteEditor = () =>  {
                             time={timeDisplayer(lastSaved)}
                         />
                     </div>
-                }
-                editor={
-                    <div css={{ width: 750, lineHeight: 2, fontSize: fontSize, fontFamily: fontFamily === 'Serif' ? 'Georgia' : theme.fonts.base }}>
-                        <Editor
-                            ref={editorRef}
-                            editorState={editorState}
-                            onChange={handleUpdateEditorState}
-                            placeholder={'Write down some thoughts...'}
-                        />
+                    <div>
+                        <div css={{ width: 750, lineHeight: 2, fontSize: fontSize, fontFamily: fontFamily === 'Serif' ? 'Georgia' : theme.fonts.base }}>
+                            <Editor
+                                ref={editorRef}
+                                editorState={editorState}
+                                onChange={handleUpdateEditorState}
+                                placeholder={'Write down some thoughts...'}
+                                plugins={[inlineToolbarPlugin]}
+                            />
+                            <InlineToolbar children={(externalProps: any): any  => ( // draft-js-plugins typescript support is buggy
+                                <div>
+                                    <BoldButton {...externalProps} />
+                                    <ItalicButton {...externalProps} />
+                                    <UnorderedListButton {...externalProps} />
+                                </div>)} />
+
+                        </div>
                     </div>
-                }
-            />
+                </div>
+            </div>
+
         </div>
     );
 }

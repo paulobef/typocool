@@ -2,7 +2,7 @@ import {
     EditorActionTypes,
     LOAD_NOTE,
     LoadedNote,
-    UPDATE_LOADED_NOTE, LoadedNoteState, START_LOADING_NOTE, ERROR_LOADING_NOTE
+    UPDATE_LOADED_NOTE, LoadedNoteState, START_LOADING_NOTE, ERROR_LOADING_NOTE, VISIT_NOTE
 } from "./types";
 import {Note} from "../notes/types";
 import { EditorState } from "draft-js";
@@ -26,7 +26,14 @@ function loadNote(state: LoadedNoteState, payload: Note): LoadedNoteState {
             lastSaved: payload.lastSaved,
             editorState: EditorState.createWithContent(payload.content),
         },
+        visited: false,
         status: { loadError: false, isLoading: false }
+    }))
+}
+
+function visitNote(state: LoadedNoteState): LoadedNoteState {
+    return Object.freeze(Object.assign({}, state, {
+        visited: true
     }))
 }
 
@@ -61,6 +68,7 @@ const initialState: LoadedNoteState = {
         lastSaved: dayjs(),
         editorState: EditorState.createEmpty(),
     },
+    visited: false,
     status: {
         loadError: false,
         isLoading: false
@@ -75,6 +83,7 @@ export default function editor(state = initialState, action: EditorActionTypes):
         case UPDATE_LOADED_NOTE: return updateLoadedNote(state, action.payload);
         case ERROR_LOADING_NOTE: return loadError(state);
         case START_LOADING_NOTE: return startLoading(state)
+        case VISIT_NOTE: return visitNote(state)
         default:
             return state
     }

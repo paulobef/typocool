@@ -15,7 +15,7 @@ import { createNote } from "../store/notes/thunks";
 
 
 /** @jsx jsx */
-function MainMenu(): JSX.Element {
+function SidebarMenu(): JSX.Element {
     const location = useLocation()
     const navigate = useNavigate()
     const notes = useSelector((state: RootState) => state.notes.notes);
@@ -48,7 +48,6 @@ function MainMenu(): JSX.Element {
                     contentBefore={<IconPlus/>}
                     onClick={handleNewNote}
                     primary={'New'}
-                    //secondary={'Add new note'}
                 /> {/* TODO: Implement Full text search https://firebase.google.com/docs/firestore/solutions/search
                 <ListItem
                     primary={<Input
@@ -60,9 +59,10 @@ function MainMenu(): JSX.Element {
             </List>
 
             <NoteList list={notes} />
+            {/* <SearchResults results={results} />*/}
         </div>
 
     )
 }
 
-export default MainMenu
+export default SidebarMenu

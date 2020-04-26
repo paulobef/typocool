@@ -2,7 +2,7 @@ import React, {useState, Fragment, useEffect} from 'react';
 import './App.css';
 import SidebarLayout from "./components/SidebarLayout";
 import Note from "./pages/Note";
-import MainMenu from "./components/MainMenu";
+import SidebarMenu from "./components/SidebarMenu";
 import { Router} from "@reach/router";
 import NoteIndex from "./pages/NoteIndex";
 import {RootState} from "./store";
@@ -27,7 +27,7 @@ function App () {
                             <Settings path={'/settings'}/>
                         </Router>
                     }
-                    sidebarComponent={<MainMenu />}
+                    sidebarComponent={<SidebarMenu />}
                     initialSidebarWidth={200}
                     resizable={true}
                 />
