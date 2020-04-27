@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, Fragment } from 'react';
+import React, {useEffect, useRef, Fragment, useState} from 'react';
 import { EditorState, RichUtils} from 'draft-js';
 import Editor from 'draft-js-plugins-editor'
 import createInlineToolbarPlugin, {ToolbarChildrenProps} from 'draft-js-inline-toolbar-plugin';
@@ -65,7 +65,6 @@ const inlineToolbarPlugin = createInlineToolbarPlugin( {
 });
 const { InlineToolbar } = inlineToolbarPlugin
 
-let timerID: Timeout;
 
 /** @jsx jsx */
 const NoteEditor = () =>  {
@@ -78,37 +77,29 @@ const NoteEditor = () =>  {
     const { isLoading } = useSelector((state: RootState) => state.editor.status);
     if (!editorState) throw new Error('no editor state')
     const editorRef = useRef(null);
-
-
-    function handleUpdateTitle(value: string) {
-        clearTimeout(timerID)
-        timerID = setTimeout(() => {
+    
+    const [timer, setTimer] = useState()
+    const updater = (whatToUpdate: 'title' | 'editor') => (value: EditorState | string): void => {
+        clearTimeout(timer)
+        setTimer(setTimeout(() => {
             if(id === "") return
             if (!visited) return
-            dispatch(updateNote(id, value, editorState.getCurrentContent(), dayjs()))
-        }, 1000)
+            dispatch(updateNote(
+                id,
+                whatToUpdate === 'title' ? value as string : title,
+                whatToUpdate === 'editor' ? (value as EditorState).getCurrentContent()  : editorState.getCurrentContent(),
+                dayjs()
+            ))
+        }, 1000))
         dispatch(updateLoadedNote({
             id,
-            title: value,
-            editorState,
+            title: whatToUpdate === 'title' ? value as string : title,
+            editorState: whatToUpdate === 'editor' ? value as EditorState  : editorState,
             lastSaved: visited ? dayjs() : lastSaved
         }))
     }
-
-    function handleUpdateEditorState(value: EditorState) {
-        clearTimeout(timerID)
-        timerID = setTimeout(() => {
-            if(id === "") return
-            if (!visited) return
-            dispatch(updateNote(id, title, value.getCurrentContent(), dayjs()))
-        }, 3000)
-        dispatch(updateLoadedNote({
-            id,
-            title,
-            editorState: value,
-            lastSaved: visited ? dayjs() : lastSaved
-        }))
-    }
+    const handleUpdateTitle = updater("title") as (value: string) => void
+    const handleUpdateEditorState = updater("editor") as (value: EditorState) => void
 
 
     function handleDeleteNote() {
@@ -124,15 +115,6 @@ const NoteEditor = () =>  {
         }
     }
 
-    function handleSaveNote() {
-        dispatch(updateNote(id, title, editorState.getCurrentContent(), dayjs()))
-        dispatch(updateLoadedNote({
-            id,
-            title,
-            editorState,
-            lastSaved: dayjs() // we update the date to now
-        }));
-    }
 
     const controlsMap = []; if (id) controlsMap.push(
         {

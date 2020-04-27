@@ -4,7 +4,7 @@ import {RECEIVE_USER_DATA, UserActionTypes, User} from "./types";
 
 //stores user data from firestore collection, which is different from authenticated user object which comes from firebase auth
 function receiveUserData(state: User, payload: User): User {
-    return assfreeze(state, payload) as User;
+    return Object.freeze({ ...state, ...payload });
 }
 
 

@@ -10,6 +10,7 @@ import {useSelector} from "react-redux";
 import Login from "./pages/Login";
 import NotFound from "./pages/NotFound";
 import Settings from "./pages/Settings";
+import Profile from "./pages/Profile";
 
 
 function App () {
@@ -25,6 +26,7 @@ function App () {
                             <Note path={'notes/:noteId'}/>
                             <NoteIndex path={'/'}/>
                             <Settings path={'/settings'}/>
+                            <Profile path={'/profile'}/>
                         </Router>
                     }
                     sidebarComponent={<SidebarMenu />}

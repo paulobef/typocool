@@ -20,7 +20,6 @@ export const createUser = (firstName: string, lastName: string, email: string, p
             }
         }});
     try {
-
         const { user } = await fireauth.createUserWithEmailAndPassword(email, password)
         if (user !== null) {
             firestore.collection('users').doc(user.uid).set({
@@ -30,9 +29,29 @@ export const createUser = (firstName: string, lastName: string, email: string, p
             });
             firestore.collection('settings').doc(user.uid).set({
                 fontSize: 12,
+                fontFamily: 'Sans Serif',
                 lastSaved: dayjs().toISOString()
             });
         }
+    } catch(error) {
+        console.log(error);
+    }
+};
+
+
+export const updateUser = (firstName: string, lastName: string, email: string): AppThunkAction => async (dispatch, getState) => {
+    const user = getState().auth.user
+    if(!user) throw new Error("no user")
+    try {
+        await user.updateEmail(email)
+        await firestore.collection('users').doc(user.uid).set({
+            email,
+            firstName,
+            lastName
+        });
+        const dbUser = await getUserFromFirestore(user.uid)
+        dispatch(receiveUserData(dbUser))
+
     } catch(error) {
         console.log(error);
     }

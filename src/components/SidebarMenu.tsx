@@ -38,9 +38,11 @@ function SidebarMenu(): JSX.Element {
                         Settings
                     </MenuItem>
                 </Link>
-                <MenuItem contentBefore={<IconUser />} >
-                    Profile
-                </MenuItem>
+                <Link css={{ textDecoration: 'none' }} to={'/profile'}>
+                    <MenuItem contentBefore={<IconUser />} >
+                        Profile
+                    </MenuItem>
+                </Link>
             </MenuList>
             <Divider />
             <List>
