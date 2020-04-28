@@ -1,17 +1,17 @@
 # Typocool
 
-Minimalist Notepad with cloud storage and authentication
+Minimalist Notepad with rich text editing capabilities & cloud storage
 
 ## Tech stack
 
 * Boilerplate: create-react-app
+* JS compiler: Typescript
 * JS Framework: React
 * State Management: Redux
 * Authentication: Firebase (custom bindings with redux)
 * Database: Firestore (also custom bindings with redux)
 * Text editor: Draft.js and draft-js-plugins
-* Static type checking: Typescript
-
+* Form helper: Formik, Yup
 
 ## Available Scripts
 
