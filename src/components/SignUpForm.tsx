@@ -1,15 +1,16 @@
 import { jsx } from "@emotion/core";
 import {Button, Input, InputGroup, Layer, Toolbar, useTheme, Text} from "sancho";
-import React, {FormEvent, useState} from "react";
-import {useDispatch} from "react-redux";
+import React, {useState} from "react";
+import {useDispatch, useSelector} from "react-redux";
 import {createUser} from "../store/user/thunks";
-import {useNavigate} from "@reach/router";
+
 
 
 /** @jsx jsx */
 export default function SignUpForm() {
     const theme = useTheme();
     const dispatch = useDispatch();
+
     const [form, setForm] = useState({
         firstName: '',
         lastName: '',
@@ -49,7 +50,7 @@ export default function SignUpForm() {
                         Create a Typocool Account
                     </Text>
                 </Toolbar>
-                <form onSubmit={handleSignIn} css={{ padding: theme.spaces.lg }}>
+                <form onSubmit={handleSignIn} css={{ padding: theme.spaces.lg }} >
                     <InputGroup hideLabel label="First Name">
                         <Input value={form.firstName} onChange={handleSetValue('firstName')} inputSize="lg" type="name" placeholder="First Name" />
                     </InputGroup>

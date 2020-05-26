@@ -1,4 +1,3 @@
-import {assfreeze} from "../../utils/assfreeze";
 import {RECEIVE_USER_DATA, UserActionTypes, User} from "./types";
 
 

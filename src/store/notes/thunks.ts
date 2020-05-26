@@ -28,7 +28,11 @@ export const listenToNotesUpdates = (): AppThunkAction => async (dispatch, getSt
     const uid = state.auth.user.uid;
     if (!uid) return
     try {
-        firestore.collection("notes").withConverter(noteConverter).where('authorId', '==', uid).orderBy('lastSaved', 'desc').limit(LIMIT)
+        firestore.collection("notes")
+            .withConverter(noteConverter)
+            .where('authorId', '==', uid)
+            .orderBy('lastSaved', 'desc')
+            .limit(LIMIT)
             .onSnapshot(function (notesSnap) {
                 const lastVisible = notesSnap.docs[notesSnap.docs.length-1];
                 const notes = notesSnap.docs.map(note => note.data());

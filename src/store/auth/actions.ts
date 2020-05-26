@@ -4,7 +4,7 @@ import {
     LOGIN_REQUEST,
     LOGIN_SUCCESS,
     LOGOUT_FAILURE, LOGOUT_REQUEST,
-    LOGOUT_SUCCESS,
+    LOGOUT_SUCCESS, VERIFY_ERROR,
     VERIFY_REQUEST, VERIFY_SUCCESS
 } from "./types";
 import {User} from "firebase";
@@ -56,5 +56,11 @@ export const verifyRequest = (): AuthActionTypes => {
 export const verifySuccess = (): AuthActionTypes => {
     return {
         type: VERIFY_SUCCESS
+    }
+};
+
+export const verifyError = (): AuthActionTypes => {
+    return {
+        type: VERIFY_ERROR
     }
 };

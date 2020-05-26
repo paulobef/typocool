@@ -77,7 +77,8 @@ const NoteEditor = () =>  {
     const { isLoading } = useSelector((state: RootState) => state.editor.status);
     if (!editorState) throw new Error('no editor state')
     const editorRef = useRef(null);
-    
+
+
     const [timer, setTimer] = useState()
     const updater = (whatToUpdate: 'title' | 'editor') => (value: EditorState | string): void => {
         clearTimeout(timer)
@@ -86,11 +87,11 @@ const NoteEditor = () =>  {
             if (!visited) return
             dispatch(updateNote(
                 id,
-                whatToUpdate === 'title' ? value as string : title,
-                whatToUpdate === 'editor' ? (value as EditorState).getCurrentContent()  : editorState.getCurrentContent(),
+                title,
+                editorState.getCurrentContent(),
                 dayjs()
             ))
-        }, 1000))
+        }, 0))
         dispatch(updateLoadedNote({
             id,
             title: whatToUpdate === 'title' ? value as string : title,

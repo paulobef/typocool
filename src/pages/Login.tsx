@@ -9,6 +9,7 @@ import {useSelector} from "react-redux";
 /**@jsx jsx */
 export default function Login () {
     const { isVerifying } = useSelector((state: RootState) => state.auth)
+
     return (
             isVerifying ?
                 <div css={{ display: 'flex', flexDirection: 'column', justifyContent: 'center', height: window.innerHeight}}>

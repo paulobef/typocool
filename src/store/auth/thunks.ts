@@ -5,7 +5,7 @@ import {
     receiveLogin,
     receiveLogout,
     requestLogin,
-    requestLogout,
+    requestLogout, verifyError,
     verifyRequest, verifySuccess
 } from "./actions";
 import {AppThunkAction} from "../types";
@@ -13,6 +13,7 @@ import { receiveUserData } from "../user/actions";
 import { getUserFromFirestore } from "../utils";
 import {listenToNotesUpdates} from "../notes/thunks";
 import {listenToSettingsUpdates} from "../settings/thunks";
+import {navigate} from "@reach/router";
 
 
 
@@ -27,6 +28,7 @@ export const loginUser = (email: string, password: string): AppThunkAction => as
             const dbUser = await getUserFromFirestore(user.uid);
             dispatch(receiveUserData(dbUser));
         }
+        dispatch(loginError()); // TODO: handle error with loginError()
     }
     catch(error) {
         console.log(error);
@@ -55,16 +57,21 @@ export const verifyAuth = (): AppThunkAction => async dispatch => {
     try {
         fireauth
             .onAuthStateChanged(async user => {
-            if (user !== null) {
-                console.log(user);
-                dispatch(receiveLogin(user));
-                const dbUser = await getUserFromFirestore(user.uid);
-                dispatch(receiveUserData(dbUser));
-                dispatch(listenToNotesUpdates())
-                dispatch(listenToSettingsUpdates())
-                dispatch(verifySuccess());
-            }});
+                if (user !== null) {
+                    console.log(user);
+                    dispatch(receiveLogin(user));
+                    const dbUser = await getUserFromFirestore(user.uid);
+                    dispatch(receiveUserData(dbUser));
+                    dispatch(listenToNotesUpdates())
+                    dispatch(listenToSettingsUpdates())
+                    dispatch(verifySuccess());
+                }
+                dispatch(verifyError())
+            });
+
     } catch (error) {
+        //dispatch(verifyError())
         console.log(error)
     }
 };
+

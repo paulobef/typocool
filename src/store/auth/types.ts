@@ -8,6 +8,7 @@ export const LOGOUT_SUCCESS = "app/auth/logout/success";
 export const LOGOUT_FAILURE = "app/auth/logout/failure";
 export const VERIFY_REQUEST = "app/auth/verify/request";
 export const VERIFY_SUCCESS = "app/auth/verify/success";
+export const VERIFY_ERROR = "app/auth/verify/error";
 
 export interface AuthState {
     isLoggingIn: boolean
@@ -54,6 +55,10 @@ interface verifySuccess {
     type: typeof VERIFY_SUCCESS
 }
 
+interface verifyError {
+    type: typeof VERIFY_ERROR
+}
 
 
-export type AuthActionTypes =  requestLogin | requestLogout | verifySuccess | verifyRequest | logoutError | logoutSuccess | loginSuccess | loginError
+
+export type AuthActionTypes =  requestLogin | requestLogout | verifySuccess | verifyRequest | logoutError | logoutSuccess | loginSuccess | loginError | verifyError

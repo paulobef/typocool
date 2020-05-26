@@ -1,21 +1,23 @@
 import { jsx } from "@emotion/core";
 import {Button, Input, InputGroup, Layer, Toolbar, useTheme, Text} from "sancho";
 import React, {useState} from "react";
-import {useDispatch} from "react-redux";
+import {useDispatch, useSelector} from "react-redux";
 import {loginUser} from "../store/auth/thunks";
+
 import {useNavigate} from "@reach/router";
+import {RootState} from "../store";
 
 
 /** @jsx jsx */
 export default function SignInForm() {
     const theme = useTheme();
     const dispatch = useDispatch();
+    const { loginError } = useSelector((state: RootState) => state.auth)
     const [email, setEmail] = useState()
     const [password, setPassword] = useState()
 
     function handleSignIn(e: React.FormEvent) {
         e.preventDefault()
-        console.log(email, password)
         dispatch(loginUser(email, password));
 
     }
@@ -34,10 +36,10 @@ export default function SignInForm() {
                     </Text>
                 </Toolbar>
                 <form onSubmit={handleSignIn} css={{ padding: theme.spaces.lg }}>
-                    <InputGroup hideLabel label="Email address">
+                    <InputGroup hideLabel error={loginError ? 'Incorrect username or password': null}  label="Email address">
                         <Input value={email} onChange={(event: any) => setEmail(event.currentTarget.value)} inputSize="lg" type="email" placeholder="Email" />
                     </InputGroup>
-                    <InputGroup hideLabel label="Password">
+                    <InputGroup hideLabel error={loginError ? 'Incorrect username or password': null} label="Password">
                         <Input value={password} onChange={(event: any) => setPassword(event.currentTarget.value)}inputSize="lg" type="password" placeholder="Password" />
                     </InputGroup>
                     <Button

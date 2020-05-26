@@ -7,7 +7,7 @@ import {
     LOGOUT_FAILURE,
     VERIFY_REQUEST,
     VERIFY_SUCCESS,
-    AuthActionTypes, AuthState
+    AuthActionTypes, AuthState, VERIFY_ERROR
 } from './types'
 import {User} from "firebase";
 import {assfreeze} from "../../utils/assfreeze";
@@ -66,7 +66,15 @@ function verifyRequest(state: AuthState): AuthState {
 
 function verifySuccess(state: AuthState): AuthState {
     return assfreeze(state, {
-        isVerifying: false
+        isVerifying: false,
+        verifyingError: false
+    }) as AuthState
+}
+
+function verifyError(state: AuthState): AuthState {
+    return assfreeze(state, {
+        isVerifying: false,
+        verifyingError: true
     }) as AuthState
 }
 
@@ -92,7 +100,7 @@ export default function auth(state = initialState, action: AuthActionTypes) {
         case LOGOUT_FAILURE: return logoutError(state)
         case VERIFY_REQUEST: return verifyRequest(state)
         case VERIFY_SUCCESS: return verifySuccess(state)
-
+        case VERIFY_ERROR: return verifyError(state)
         default:
             return state;
     }
