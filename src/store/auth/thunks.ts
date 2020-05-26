@@ -13,7 +13,6 @@ import { receiveUserData } from "../user/actions";
 import { getUserFromFirestore } from "../utils";
 import {listenToNotesUpdates} from "../notes/thunks";
 import {listenToSettingsUpdates} from "../settings/thunks";
-import {navigate} from "@reach/router";
 
 
 

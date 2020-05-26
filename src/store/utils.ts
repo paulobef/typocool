@@ -10,6 +10,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import {Settings, SettingsState} from "./settings/types";
 import {AppStateWithLoading} from "./types";
 import {LoadedNoteState} from "./editor/types";
+import { AuthState } from "./auth/types";
 
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)

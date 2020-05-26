@@ -1,6 +1,3 @@
-import firebase from 'firebase'
-import {ContentState} from "draft-js";
-
 
 export const RECEIVE_USER_DATA = "app/user/receive";
 

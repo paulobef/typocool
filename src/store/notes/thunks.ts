@@ -8,7 +8,6 @@ import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
 // @ts-ignore
 import relativeTime from "dayjs/plugin/relativeTime";
-import notes from "./reducers";
 import {startLoadingInit} from "../notes/actions";
 
 dayjs.extend(isToday)

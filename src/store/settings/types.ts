@@ -1,6 +1,4 @@
-import {ContentState} from "draft-js";
 import {Dayjs} from "dayjs"
-import firebase from "firebase";
 
 export const START_LOADING = 'app/settings/start_init';
 export const ERROR_LOADING = 'app/settings/error_init';

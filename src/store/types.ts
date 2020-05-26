@@ -1,5 +1,4 @@
 import {NoteState} from "./notes/types";
-import {AuthState} from "./auth/types";
 import {ThunkAction} from "redux-thunk";
 import {RootState} from "./index";
 import {AnyAction} from "redux";
