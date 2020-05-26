@@ -1,5 +1,5 @@
 import React, {Fragment, ReactElement, useRef} from 'react'
-import {List, ListItem, ScrollView, useTheme, Button, Skeleton, useInfiniteScroll} from "sancho";
+import {List, ListItem, ScrollView, Skeleton} from "sancho";
 import { Link } from '@reach/router'
 import { jsx } from '@emotion/core'
 import dateDisplayer, {timeDisplayer} from "../utils/dateDisplayer";

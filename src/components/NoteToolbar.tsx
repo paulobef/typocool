@@ -1,5 +1,5 @@
-import {EditorControl, StyleControl, StyleHandler} from "../pages/Note";
-import {ButtonSize, IconButton, IconList, IconMoreVertical, Layer, MenuItem, MenuList, ResponsivePopover} from "sancho";
+import {EditorControl} from "../pages/Note";
+import {ButtonSize, IconButton, IconMoreVertical, MenuItem, MenuList, ResponsivePopover} from "sancho";
 import React from "react";
 import { jsx } from '@emotion/core'
 

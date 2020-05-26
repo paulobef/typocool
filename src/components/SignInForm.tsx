@@ -3,8 +3,6 @@ import {Button, Input, InputGroup, Layer, Toolbar, useTheme, Text} from "sancho"
 import React, {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {loginUser} from "../store/auth/thunks";
-
-import {useNavigate} from "@reach/router";
 import {RootState} from "../store";
 
 
@@ -13,13 +11,12 @@ export default function SignInForm() {
     const theme = useTheme();
     const dispatch = useDispatch();
     const { loginError } = useSelector((state: RootState) => state.auth)
-    const [email, setEmail] = useState()
-    const [password, setPassword] = useState()
+    const [email, setEmail] = useState('')
+    const [password, setPassword] = useState('')
 
     function handleSignIn(e: React.FormEvent) {
         e.preventDefault()
         dispatch(loginUser(email, password));
-
     }
 
     return (

@@ -1,4 +1,4 @@
-import React, {useState, Fragment, useEffect} from 'react';
+import React from 'react';
 import './App.css';
 import SidebarLayout from "./components/SidebarLayout";
 import Note from "./pages/Note";

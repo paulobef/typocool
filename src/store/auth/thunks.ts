@@ -1,4 +1,4 @@
-import {fireauth, firebaseApp} from "../index";
+import {fireauth} from "../index";
 import {
     loginError,
     logoutError,
@@ -22,12 +22,13 @@ export const loginUser = (email: string, password: string): AppThunkAction => as
     try {
         const { user } = await fireauth.signInWithEmailAndPassword(email, password);
         if (user !== null) {
-            console.log(user);
             dispatch(receiveLogin(user));
             const dbUser = await getUserFromFirestore(user.uid);
             dispatch(receiveUserData(dbUser));
+        } else {
+            dispatch(loginError())
         }
-        dispatch(loginError()); // TODO: handle error with loginError()
+        
     }
     catch(error) {
         console.log(error);
@@ -57,7 +58,6 @@ export const verifyAuth = (): AppThunkAction => async dispatch => {
         fireauth
             .onAuthStateChanged(async user => {
                 if (user !== null) {
-                    console.log(user);
                     dispatch(receiveLogin(user));
                     const dbUser = await getUserFromFirestore(user.uid);
                     dispatch(receiveUserData(dbUser));
@@ -69,7 +69,7 @@ export const verifyAuth = (): AppThunkAction => async dispatch => {
             });
 
     } catch (error) {
-        //dispatch(verifyError())
+        dispatch(verifyError())
         console.log(error)
     }
 };

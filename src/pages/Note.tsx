@@ -1,13 +1,13 @@
-import React, {useEffect, useRef, Fragment, useState} from 'react';
-import { EditorState, RichUtils} from 'draft-js';
+import React, {useEffect, useRef, useState} from 'react';
+import { EditorState, } from 'draft-js';
 import Editor from 'draft-js-plugins-editor'
-import createInlineToolbarPlugin, {ToolbarChildrenProps} from 'draft-js-inline-toolbar-plugin';
+import createInlineToolbarPlugin from 'draft-js-inline-toolbar-plugin';
 import {
     ItalicButton,
     BoldButton,
-    UnorderedListButton, DraftJsButtonProps, DraftJsStyleButtonType,
+    UnorderedListButton,
 } from 'draft-js-buttons'
-import {IconBold, IconCode, IconItalic, IconList, IconSave, IconXCircle, Skeleton, Text, useTheme} from "sancho";
+import {IconXCircle, Skeleton, Text, useTheme} from "sancho";
 import { jsx } from '@emotion/core'
 import { RouteComponentProps, useNavigate} from '@reach/router'
 import '../App.css'
@@ -79,9 +79,10 @@ const NoteEditor = () =>  {
     const editorRef = useRef(null);
 
 
-    const [timer, setTimer] = useState()
+    const [timer, setTimer] = useState<NodeJS.Timeout>()
+    
     const updater = (whatToUpdate: 'title' | 'editor') => (value: EditorState | string): void => {
-        clearTimeout(timer)
+        if (timer) clearTimeout(timer)
         setTimer(setTimeout(() => {
             if(id === "") return
             if (!visited) return

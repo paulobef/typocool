@@ -1,6 +1,6 @@
 import React from 'react';
 import './App.css';
-import {createHistory, LocationProvider, Router} from "@reach/router";
+import {createHistory, LocationProvider} from "@reach/router";
 import {Provider} from "react-redux";
 import App from "./App";
 import configureStore from "./store";
