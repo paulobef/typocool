@@ -4,6 +4,7 @@ import React, {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
 import {loginUser} from "../store/auth/thunks";
 import {RootState} from "../store";
+import ErrorMessage from "./ErrorMessage";
 
 
 /** @jsx jsx */
@@ -33,10 +34,10 @@ export default function SignInForm() {
                     </Text>
                 </Toolbar>
                 <form onSubmit={handleSignIn} css={{ padding: theme.spaces.lg }}>
-                    <InputGroup hideLabel error={loginError ? 'Incorrect username or password': null}  label="Email address">
+                    <InputGroup hideLabel label="Email address">
                         <Input value={email} onChange={(event: any) => setEmail(event.currentTarget.value)} inputSize="lg" type="email" placeholder="Email" />
                     </InputGroup>
-                    <InputGroup hideLabel error={loginError ? 'Incorrect username or password': null} label="Password">
+                    <InputGroup hideLabel label="Password">
                         <Input value={password} onChange={(event: any) => setPassword(event.currentTarget.value)}inputSize="lg" type="password" placeholder="Password" />
                     </InputGroup>
                     <Button
@@ -51,6 +52,7 @@ export default function SignInForm() {
                     >
                         Sign in
                     </Button>
+                    {loginError ? <ErrorMessage errorText='Incorrect username or password' />: null}
                 </form>
             </Layer>
         </div>

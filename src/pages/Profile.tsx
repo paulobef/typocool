@@ -1,5 +1,6 @@
 import {useDispatch, useSelector} from "react-redux";
 import {Button, IconLogOut, Input, InputGroup, Text} from "sancho";
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 import React from "react";
 import {useFormik} from "formik";
 import * as Yup from "yup";
@@ -15,7 +16,7 @@ interface ProfileProps {
 /**@jsx jsx */
 const Profile = (props: ProfileProps) => {
     const dispatch = useDispatch();
-    const { firstName, lastName, email } = useSelector((state: RootState) => state.user)
+    const { firstName, lastName, email } = useSelector((state: RootState) => state.user.user)
 
     const handleLogout = () => dispatch(logoutUser());
 
@@ -67,6 +68,7 @@ const Profile = (props: ProfileProps) => {
                 <Button
                     type={"submit"}
                     css={{ marginBottom: 20, marginTop: 30}}
+                    //loading={status.isLoading}
                 >Save</Button>
             </form>
             <Button

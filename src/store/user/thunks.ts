@@ -1,7 +1,7 @@
 import {fireauth, firestore} from "../index";
 import {AppThunkAction} from "../types";
 import {receiveLogin} from "../auth/actions";
-import {receiveUserData} from "./actions";
+import {receiveUserData, startUserCreation, userCreationError} from "./actions";
 import {getUserFromFirestore} from "../utils";
 import dayjs from "dayjs";
 
@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 
 
 export const createUser = (firstName: string, lastName: string, email: string, password: string): AppThunkAction => async dispatch => {
+    dispatch(startUserCreation())
     fireauth.onAuthStateChanged(async user => {
         if (user !== null) {
             try {
@@ -34,6 +35,7 @@ export const createUser = (firstName: string, lastName: string, email: string, p
             });
         }
     } catch(error) {
+        dispatch(userCreationError())
         console.log(error);
     }
 };

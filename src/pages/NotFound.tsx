@@ -14,7 +14,7 @@ function NotFound(props: NoteScreenProps): JSX.Element {
     const location = useLocation()
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const userFirstName = useSelector((state: RootState) => state.user.firstName)
+    const userFirstName = useSelector((state: RootState) => state.user.user.firstName)
 
     function handleNewNote() {
         dispatch(createNote( location.pathname ,navigate))

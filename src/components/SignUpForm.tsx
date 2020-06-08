@@ -1,8 +1,10 @@
 import { jsx } from "@emotion/core";
-import {Button, Input, InputGroup, Layer, Toolbar, useTheme, Text} from "sancho";
+import {Button, Input, InputGroup, Layer, Toolbar, useTheme, Text, IconAlertCircle} from "sancho";
 import React, {useState} from "react";
-import {useDispatch, useSelector} from "react-redux";
+import {useDispatch, useSelector } from "react-redux";
 import {createUser} from "../store/user/thunks";
+import { RootState } from "../store";
+import ErrorMessage from "./ErrorMessage";
 
 
 
@@ -10,6 +12,7 @@ import {createUser} from "../store/user/thunks";
 export default function SignUpForm() {
     const theme = useTheme();
     const dispatch = useDispatch();
+    const status = useSelector((state: RootState) => state.user.status )
 
     const [form, setForm] = useState({
         firstName: '',
@@ -61,7 +64,7 @@ export default function SignUpForm() {
                         <Input value={form.email} onChange={handleSetValue('email')} inputSize="lg" type="email" placeholder="Email" />
                     </InputGroup>
                     <InputGroup hideLabel label="Password">
-                        <Input value={form.password} onChange={handleSetValue('password')}inputSize="lg" type="password" placeholder="Password" />
+                        <Input value={form.password} onChange={handleSetValue('password')} inputSize="lg" type="password" placeholder="Password" />
                     </InputGroup>
                     <Button
                         css={{ marginTop: "1rem" }}
@@ -71,10 +74,17 @@ export default function SignUpForm() {
                         block
                         variant={"ghost"}
                         intent="primary"
-
+                        loading={status.isLoading}
                     >
                         Sign in
                     </Button>
+                    
+                    {
+                        status.error ?
+                        <ErrorMessage errorText={'Sorry, your account couldn\'t be created'}/>
+                        : null 
+                    }
+                    
                 </form>
             </Layer>
         </div>

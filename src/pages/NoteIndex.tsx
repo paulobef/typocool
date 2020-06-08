@@ -14,7 +14,7 @@ function NoteIndex(props: NoteScreenProps): JSX.Element {
     const location = useLocation()
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const userFirstName = useSelector((state: RootState) => state.user.firstName);
+    const userFirstName = useSelector((state: RootState) => state.user.user.firstName);
 
     function handleNewNote() {
         // we navigate inside the thunk because outside we don't have access to the user.uid

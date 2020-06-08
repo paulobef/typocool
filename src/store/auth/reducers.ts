@@ -10,72 +10,80 @@ import {
     AuthActionTypes, AuthState, VERIFY_ERROR
 } from './types'
 import {User} from "firebase";
-import {assfreeze} from "../../utils/assfreeze";
 
 function requestLogin(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isLoggingIn: true,
         loginError: false
-    }) as AuthState
+    })
 }
 
 function loginSuccess(state: AuthState, payload: User): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isLoggingIn: false,
         isAuthenticated: true,
         user: payload
-    }) as AuthState
+    })
 }
 
 function loginError(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isLoggingIn: false,
         isAuthenticated: false,
         loginError: true
-    }) as AuthState
+    })
 }
 
 function logoutRequest(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isLoggingOut: true,
         logoutError: false
-    }) as AuthState
+    })
 }
 
 function logoutSuccess(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isLoggingOut: false,
         isAuthenticated: false,
         logoutError: false
-    }) as AuthState
+    })
 }
 
 function logoutError(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isLoggingOut: false,
         logoutError: true
-    }) as AuthState
+    })
 }
 
 function verifyRequest(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isVerifying: true,
         verifyingError: false
-    }) as AuthState
+    })
 }
 
 function verifySuccess(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isVerifying: false,
         verifyingError: false
-    }) as AuthState
+    })
 }
 
 function verifyError(state: AuthState): AuthState {
-    return assfreeze(state, {
+    return Object.freeze({
+        ...state,
         isVerifying: false,
         verifyingError: true
-    }) as AuthState
+    })
 }
 
 

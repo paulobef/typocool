@@ -1,4 +1,4 @@
-import {User} from "./user/types";
+import {User, UserState} from "./user/types";
 import {firestore} from "./index";
 import firebase from "firebase";
 import {Note, NoteState} from "./notes/types";
@@ -80,16 +80,26 @@ export const getNotesFromFirestore = async (uid: string): Promise<Array<Note>> =
 
 export const getOneNoteFromFirestore = async (id: string): Promise<Note | undefined> => {
     if (!id) throw new Error('no id')
-    const noteSnap = await firestore.collection('notes').withConverter(noteConverter).doc(id).get();
-    if(!noteSnap.exists)  { return undefined }
-    return noteSnap.data()
-};
+    try {
+        const noteSnap = await firestore.collection('notes').withConverter(noteConverter).doc(id).get();
+        if(!noteSnap.exists)  { return undefined }
+        return noteSnap.data()
+    } catch(error) {
+        console.log(error)
+    }
+};  
 
 export function startLoading(state: AppStateWithLoading, statusName: string): AppStateWithLoading {
     const status = { ...state.status, ...{ [statusName]: true } }
-    return <NoteState | LoadedNoteState | SettingsState>Object.freeze({...state, status})
+    return Object.freeze({...state, status}) as NoteState | LoadedNoteState | SettingsState | UserState
 }
 export function endLoadingWithError(state: AppStateWithLoading, loadingStateName: string, errorStateName: string): AppStateWithLoading {
     const status = { ...state.status, ...{ [loadingStateName]: false, [errorStateName]: true }}
-    return <NoteState | LoadedNoteState | SettingsState>Object.freeze({...state, status})
+    return Object.freeze({...state, status}) as NoteState | LoadedNoteState | SettingsState | UserState
 }
+
+export const initStatus = () => ({
+    error: false,
+    isLoading: false
+})
+

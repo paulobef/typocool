@@ -4,10 +4,15 @@ import {loadError, loadNoteInEditor, startLoading} from "./actions";
 
 export const getNoteForEdition = (id: string): AppThunkAction => async (dispatch, getState) => {
     dispatch(startLoading());
-    const note = await getOneNoteFromFirestore(id)
-    if (note) {
-        dispatch(loadNoteInEditor(note));
-    } else {
-        dispatch(loadError())
+    try {
+        const note = await getOneNoteFromFirestore(id)
+        if (note) {
+            dispatch(loadNoteInEditor(note));
+        } else {
+            dispatch(loadError())
+        }
+    } catch (error) {
+        console.log(error)
     }
+
 };

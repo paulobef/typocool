@@ -28,7 +28,7 @@ import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
 import relativeTime from "dayjs/plugin/relativeTime";
 import '../styles/inline-toolbar.css'
-type Timeout = NodeJS.Timeout;
+import { StrikethroughButton } from '../components/StrikethroughButton';
 
 dayjs.extend(isToday)
 dayjs.extend(isYesterday)
@@ -50,6 +50,13 @@ export type EditorControl = {
     handler: (event: React.MouseEvent) => void
     label: string
 }
+
+const styleMap = {
+    'STRIKETHROUGH': {
+      textDecoration: 'line-through',
+    },
+  };
+  
 
 const inlineToolbarPlugin = createInlineToolbarPlugin( {
     theme: {
@@ -103,12 +110,6 @@ const NoteEditor = () =>  {
     const handleUpdateTitle = updater("title") as (value: string) => void
     const handleUpdateEditorState = updater("editor") as (value: EditorState) => void
 
-
-    function handleDeleteNote() {
-        dispatch(deleteNote(id))
-        navigate('/')
-    }
-
     const handlePressEnter = (event: React.KeyboardEvent)  => {
         if (event.key === 'Enter') {
             event.preventDefault();
@@ -118,13 +119,20 @@ const NoteEditor = () =>  {
     }
 
 
-    const controlsMap = []; if (id) controlsMap.push(
+    const controlsMap = []; if (id) {
+        controlsMap.push(
         {
-            label: 'delete',
+            label: 'Delete',
             icon: <IconXCircle/>,
-            handler: handleDeleteNote
+            handler: function handleDeleteNote() {
+                dispatch(deleteNote(id))
+                navigate('/')
+            }
         }
-    );
+            );
+        } else {
+            console.log('no id')
+        }
 
     if (isLoading){
         return (
@@ -141,7 +149,7 @@ const NoteEditor = () =>  {
         <div css={{ width: 850, paddingLeft: 50, paddingRight: 50, paddingTop: 20, paddingBottom: 20 }}>
             <div css={ {display: 'flex', flexDirection: 'row'}}>
                 <div css={{ alignSelf: 'flex-start', position: 'sticky', top: 0 }}>
-                    <NoteToolbar controlsMap={controlsMap} />
+                  <NoteToolbar controlsMap={controlsMap} />
                 </div>
                 <div onClick={() => dispatch(visitLoadedNote())} css={ {display: 'flex', flexDirection: 'column'} }>
                     <div css={{ fontFamily: fontFamily === 'Serif' ? 'Georgia' : theme.fonts.base}}>
@@ -158,6 +166,7 @@ const NoteEditor = () =>  {
                         <div css={{ width: 750, lineHeight: 2, fontSize: fontSize, fontFamily: fontFamily === 'Serif' ? 'Georgia' : theme.fonts.base }}>
                             <Editor
                                 ref={editorRef}
+                                customStyleMap={styleMap}
                                 editorState={editorState}
                                 onChange={handleUpdateEditorState}
                                 placeholder={'Write down some thoughts...'}
@@ -168,6 +177,7 @@ const NoteEditor = () =>  {
                                     <BoldButton {...externalProps} />
                                     <ItalicButton {...externalProps} />
                                     <UnorderedListButton {...externalProps} />
+                                    <StrikethroughButton {...externalProps} />
                                 </div>)} />
 
                         </div>
@@ -191,7 +201,12 @@ function Note(props: NoteScreenProps): JSX.Element {
     const loadError = useSelector((state: RootState) => state.editor.status.loadError)
     useEffect(() => {
         if (props.noteId) {
-            dispatch(getNoteForEdition(props.noteId))
+            try {
+                dispatch(getNoteForEdition(props.noteId))
+
+            } catch (error) {
+                throw new Error('note error' + error)
+            }
         }
 
     }, [dispatch, props.noteId]);

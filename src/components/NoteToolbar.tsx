@@ -1,17 +1,15 @@
+import React, { Fragment } from "react";
 import {EditorControl} from "../pages/Note";
-import {ButtonSize, IconButton, IconMoreVertical, MenuItem, MenuList, ResponsivePopover} from "sancho";
-import React from "react";
+import { IconButton, IconMoreVertical, MenuItem, MenuList, ResponsivePopover} from "sancho";
 import { jsx } from '@emotion/core'
 
 
 interface EditorToolbarProps {
     controlsMap: Array<EditorControl>,
-    buttonSize?: ButtonSize
 }
 
 /** @jsx jsx */
-const NoteToolbar = ({    controlsMap,
-                            buttonSize } : EditorToolbarProps) => {
+const NoteToolbar = ({ controlsMap } : EditorToolbarProps) => {
     return (
         <div css={{
             display: 'flex',
@@ -23,22 +21,58 @@ const NoteToolbar = ({    controlsMap,
             marginRight: 30,
             marginTop: 50
         }} >
-            <ResponsivePopover
-                content={
-                    <MenuList>
-                        { controlsMap.map(({ icon, label, handler }: EditorControl, key: number) =>
-                            <MenuItem key={key} contentBefore={icon} component="a" onClick={handler}>
-                                {label}
-                            </MenuItem>) }
-                    </MenuList>
-                }
-                placement={'left'}
-            >
-                <IconButton variant="ghost" icon={<IconMoreVertical />} label="show more" />
-            </ResponsivePopover>
+            <ErrorBoundary 
+                controlsMap={controlsMap}
+                >
+                <Fragment>
+                    <ResponsivePopover
+                        content={
+                            <MenuList>
+                                { controlsMap.map(({ icon, label, handler }: EditorControl, key: number) =>
+                                    <MenuItem key={key} contentBefore={icon} onClick={handler}>
+                                        {label}
+                                    </MenuItem>) }
+                            </MenuList>
+                        }
+                        placement={'auto'}
+                    >
+                        <IconButton variant="ghost" icon={<IconMoreVertical />} label="show more" />
+                    </ResponsivePopover>
+                    
+                </Fragment>
+            </ErrorBoundary>
         </div>
 
     )
 };
 
 export default NoteToolbar
+
+class ErrorBoundary extends React.Component {
+    state: any
+    props: any
+
+    constructor(props: { controlsMap: any }) {
+      super(props);
+      this.state = { hasError: false };
+    }
+  
+    static getDerivedStateFromError(error: any) {
+      // Mettez à jour l'état, de façon à montrer l'UI de repli au prochain rendu.
+      return { hasError: true };
+    }
+  
+    componentDidCatch(error: any, errorInfo: any) {
+      // Vous pouvez aussi enregistrer l'erreur au sein d'un service de rapport.
+      console.log(error, errorInfo)
+    }
+  
+    render() {
+      if (this.state.hasError) {
+        // Vous pouvez afficher n'importe quelle UI de repli.
+        return <Fragment></Fragment>
+      }
+  
+      return this.props.children;
+    }
+  }
