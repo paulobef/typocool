@@ -2,9 +2,9 @@ import { jsx } from "@emotion/core";
 import {Button, Input, InputGroup, Layer, Toolbar, useTheme, Text} from "sancho";
 import React, {useState} from "react";
 import {useDispatch, useSelector} from "react-redux";
-import {loginUser} from "../store/auth/thunks";
-import {RootState} from "../store";
-import ErrorMessage from "./ErrorMessage";
+import {loginUser} from "../../store/auth/thunks";
+import {RootState} from "../../store";
+import ErrorMessage from "../components/ErrorMessage";
 
 
 /** @jsx jsx */
@@ -38,7 +38,7 @@ export default function SignInForm() {
                         <Input value={email} onChange={(event: any) => setEmail(event.currentTarget.value)} inputSize="lg" type="email" placeholder="Email" />
                     </InputGroup>
                     <InputGroup hideLabel label="Password">
-                        <Input value={password} onChange={(event: any) => setPassword(event.currentTarget.value)}inputSize="lg" type="password" placeholder="Password" />
+                        <Input value={password} onChange={(event: any) => setPassword(event.currentTarget.value)} inputSize="lg" type="password" placeholder="Password" />
                     </InputGroup>
                     <Button
                         css={{ marginTop: "1rem" }}
