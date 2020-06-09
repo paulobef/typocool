@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useRef, useState } from "react";
 import { EditorState } from "draft-js";
 import Editor from "draft-js-plugins-editor";
 import createInlineToolbarPlugin from "draft-js-inline-toolbar-plugin";
@@ -7,7 +7,7 @@ import {
   BoldButton,
   UnorderedListButton,
 } from "draft-js-buttons";
-import { IconXCircle, Skeleton, Text, useTheme } from "sancho";
+import { IconXCircle, useTheme } from "sancho";
 import { jsx } from "@emotion/core";
 import { RouteComponentProps, useNavigate } from "@reach/router";
 import "../../App.css";
@@ -15,13 +15,10 @@ import "draft-js/dist/Draft.css";
 import "draft-js-inline-toolbar-plugin/lib/plugin.css";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../store";
-import NoteToolbar from "../components/NoteToolbar";
 import NoteTitle from "../components/NoteTitle";
 import NoteIndex from "./NoteIndex";
 import { updateLoadedNote } from "../../store/notes/actions";
-// import { updateLoadedNote, visitLoadedNote } from "../../store/editor/actions";
 import { deleteNote, updateNote } from "../../store/notes/thunks";
-import NotFound from "./NotFound";
 import dayjs from "dayjs";
 import dateDisplayer, { timeDisplayer } from "../../utils/dateDisplayer";
 import isToday from "dayjs/plugin/isToday";
@@ -30,6 +27,7 @@ import relativeTime from "dayjs/plugin/relativeTime";
 import "../../styles/inline-toolbar.css";
 import { StrikethroughButton } from "../components/StrikethroughButton";
 import { Note as NoteType } from "../../store/notes/types";
+import NoteToolbar from "../components/NoteToolbar";
 
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
