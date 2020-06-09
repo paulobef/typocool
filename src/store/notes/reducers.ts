@@ -10,9 +10,23 @@ import {
   NoteState,
   START_LOADING_INIT,
   START_LOADING_MORE,
+  ERROR_LOADING_EDITOR,
+  START_LOADING_EDITOR,
+  SELECT_NOTE,
+  VISIT_NOTE,
 } from "./types";
 import firebase from "firebase";
 import { endLoadingWithError, startLoading } from "../utils";
+
+function updateSelectedNote(
+  state: NoteState,
+  payload: { id: string; unsubscribe: Function }
+): NoteState {
+  return Object.freeze({
+    ...state,
+    selectedNote: { ...payload, visited: false },
+  });
+}
 
 function loadNotes(
   state: NoteState,
@@ -66,17 +80,40 @@ function updateLoadedNote(state: NoteState, payload: Note): NoteState {
 }
 
 function updateNoteFromServer(state: NoteState, payload: Note): NoteState {
-  const newNotes = state.notes.map((note) => {
-    if (note.id === payload.id && note.version < payload.version) {
-      return payload;
-    }
-    return note;
-  });
-  return Object.freeze(
-    Object.assign({}, state, {
-      notes: newNotes,
-    })
-  );
+  const newStatus = {
+    ...state.status,
+    isLoadingEditor: false,
+    loadErrorEditor: false,
+  };
+  const existingNote = state.notes.find((note) => note.id === payload.id);
+  if (existingNote) {
+    const newNotes = state.notes.map((note) => {
+      if (note.id === payload.id && note.version < payload.version) {
+        console.log("updated");
+        return payload;
+      }
+      return note;
+    });
+    return Object.freeze(
+      Object.assign({}, state, {
+        notes: newNotes,
+        status: newStatus,
+      })
+    );
+  } else {
+    const newNotes = [...state.notes, payload];
+    return Object.freeze(
+      Object.assign({}, state, {
+        notes: newNotes,
+        status: newStatus,
+      })
+    );
+  }
+}
+
+function visitSelectedNote(state: NoteState): NoteState {
+  const newSelectedNote = { ...state.selectedNote, visited: true };
+  return Object.freeze({ ...state, selectedNote: newSelectedNote });
 }
 
 const initialState: NoteState = Object.freeze({
@@ -86,6 +123,13 @@ const initialState: NoteState = Object.freeze({
     isLoadingInit: false,
     loadErrorMore: false,
     isLoadingMore: false,
+    isLoadingEditor: false,
+    loadErrorEditor: false,
+  },
+  selectedNote: {
+    id: "",
+    visited: false,
+    unsubscribe: function () {},
   },
   lastVisible: Object.create(null),
 });
@@ -100,21 +144,37 @@ export default function notes(
     case LOAD_MORE_NOTES:
       return loadMoreNotes(state, action.payload);
     case START_LOADING_INIT:
-      return <NoteState>startLoading(state, "isLoadingInit");
+      return startLoading(state, "isLoadingInit") as NoteState;
     case START_LOADING_MORE:
-      return <NoteState>startLoading(state, "isLoadingMore");
+      return startLoading(state, "isLoadingMore") as NoteState;
     case ERROR_LOADING_INIT:
-      return <NoteState>(
-        endLoadingWithError(state, "isLoadingInit", "loadErrorInit")
-      );
+      return endLoadingWithError(
+        state,
+        "isLoadingInit",
+        "loadErrorInit"
+      ) as NoteState;
     case ERROR_LOADING_MORE:
-      return <NoteState>(
-        endLoadingWithError(state, "isLoadingMore", "loadErrorMore")
-      );
+      return endLoadingWithError(
+        state,
+        "isLoadingMore",
+        "loadErrorMore"
+      ) as NoteState;
     case UPDATE_LOADED_NOTE:
       return updateLoadedNote(state, action.payload);
     case UPDATE_NOTE_FROM_SERVER:
       return updateNoteFromServer(state, action.payload);
+    case START_LOADING_EDITOR:
+      return startLoading(state, "isLoadingEditor") as NoteState;
+    case ERROR_LOADING_EDITOR:
+      return endLoadingWithError(
+        state,
+        "isLoadingEditor",
+        "loadErrorEditor"
+      ) as NoteState;
+    case SELECT_NOTE:
+      return updateSelectedNote(state, action.payload);
+    case VISIT_NOTE:
+      return visitSelectedNote(state);
     default:
       return state;
   }

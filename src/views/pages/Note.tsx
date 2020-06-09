@@ -1,33 +1,36 @@
-import React, { useRef, useState } from "react";
-import { EditorState } from "draft-js";
-import Editor from "draft-js-plugins-editor";
-import createInlineToolbarPlugin from "draft-js-inline-toolbar-plugin";
-import {
-  ItalicButton,
-  BoldButton,
-  UnorderedListButton,
-} from "draft-js-buttons";
-import { IconXCircle, useTheme } from "sancho";
-import { jsx } from "@emotion/core";
-import { RouteComponentProps, useNavigate } from "@reach/router";
 import "../../App.css";
 import "draft-js/dist/Draft.css";
 import "draft-js-inline-toolbar-plugin/lib/plugin.css";
-import { useDispatch, useSelector } from "react-redux";
-import { RootState } from "../../store";
-import NoteTitle from "../components/NoteTitle";
-import NoteIndex from "./NoteIndex";
-import { updateLoadedNote } from "../../store/notes/actions";
-import { deleteNote, updateNote } from "../../store/notes/thunks";
+import "../../styles/inline-toolbar.css";
+
 import dayjs from "dayjs";
-import dateDisplayer, { timeDisplayer } from "../../utils/dateDisplayer";
 import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
 import relativeTime from "dayjs/plugin/relativeTime";
-import "../../styles/inline-toolbar.css";
+import createInlineToolbarPlugin from "draft-js-inline-toolbar-plugin";
+import Editor from "draft-js-plugins-editor";
+import React, { useRef, useState } from "react";
+import { EditorState } from "draft-js";
+import {
+  BoldButton,
+  ItalicButton,
+  UnorderedListButton,
+} from "draft-js-buttons";
+import { IconXCircle, useTheme, Spinner } from "sancho";
+import { jsx } from "@emotion/core";
+import { RouteComponentProps, useNavigate } from "@reach/router";
+import { useDispatch, useSelector } from "react-redux";
+
+import NoteTitle from "../components/NoteTitle";
+import NoteIndex from "./NoteIndex";
+import dateDisplayer, { timeDisplayer } from "../../utils/dateDisplayer";
+import { RootState } from "../../store";
+import { updateLoadedNote, visitSelectedNote } from "../../store/notes/actions";
+import { deleteNote, updateNote } from "../../store/notes/thunks";
 import { StrikethroughButton } from "../components/StrikethroughButton";
 import { Note as NoteType } from "../../store/notes/types";
-import NoteToolbar from "../components/NoteToolbar";
+import { NoteToolbar } from "../components/NoteToolbar";
+import NotFound from "./NotFound";
 
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
@@ -68,17 +71,17 @@ const inlineToolbarPlugin = createInlineToolbarPlugin({
 const { InlineToolbar } = inlineToolbarPlugin;
 
 /** @jsx jsx */
-const NoteEditor = ({ noteId }: { noteId: string }) => {
+const NoteEditor = ({ note }: { note: NoteType }) => {
   const dispatch = useDispatch();
   const theme = useTheme();
   const navigate = useNavigate();
-  const note = useSelector((state: RootState) =>
-    state.notes.notes.find((note: NoteType): boolean => note.id === noteId)
-  );
   if (!note) throw new Error("no note data");
   const { id, title, state, lastSaved, authorId, version } = note;
   const { fontSize, fontFamily } = useSelector(
     (state: RootState) => state.settings.settings
+  );
+  const { visited } = useSelector(
+    (state: RootState) => state.notes.selectedNote
   );
   if (!state) throw new Error("no editor state");
   const editorRef = useRef(null);
@@ -88,24 +91,30 @@ const NoteEditor = ({ noteId }: { noteId: string }) => {
   const updater = (whatToUpdate: "title" | "editor") => (
     value: EditorState | string
   ): void => {
-    if (timer) clearTimeout(timer);
-    setTimer(
-      setTimeout(() => {
-        if (id === "") return;
-        dispatch(
-          updateNote(id, title, state.getCurrentContent(), dayjs(), version + 1)
-        );
-      }, 0)
-    );
     dispatch(
       updateLoadedNote({
         id,
         authorId,
         title: whatToUpdate === "title" ? (value as string) : title,
         state: whatToUpdate === "editor" ? (value as EditorState) : state,
-        lastSaved: dayjs(),
+        lastSaved: !visited ? lastSaved : dayjs(),
         version: version + 1,
       })
+    );
+    if (timer) clearTimeout(timer);
+    setTimer(
+      setTimeout(() => {
+        if (id === "") return;
+        dispatch(
+          updateNote(
+            id,
+            title,
+            state.getCurrentContent(),
+            !visited ? lastSaved : dayjs(),
+            version + 1
+          )
+        );
+      }, 0)
     );
   };
   const handleUpdateTitle = updater("title") as (value: string) => void;
@@ -149,7 +158,10 @@ const NoteEditor = ({ noteId }: { noteId: string }) => {
         <div css={{ alignSelf: "flex-start", position: "sticky", top: 0 }}>
           <NoteToolbar controlsMap={controlsMap} />
         </div>
-        <div css={{ display: "flex", flexDirection: "column" }}>
+        <div
+          css={{ display: "flex", flexDirection: "column" }}
+          onClick={() => dispatch(visitSelectedNote())}
+        >
           <div
             css={{
               fontFamily: fontFamily === "Serif" ? "Georgia" : theme.fonts.base,
@@ -189,8 +201,8 @@ const NoteEditor = ({ noteId }: { noteId: string }) => {
                   <div>
                     <BoldButton {...externalProps} />
                     <ItalicButton {...externalProps} />
-                    <UnorderedListButton {...externalProps} />
                     <StrikethroughButton {...externalProps} />
+                    <UnorderedListButton {...externalProps} />
                   </div>
                 )}
               />
@@ -207,14 +219,42 @@ export interface NoteScreenProps extends RouteComponentProps {
 }
 
 /** @jsx jsx */
-function Note(props: NoteScreenProps): JSX.Element {
+function Note(props: NoteScreenProps) {
   const navigate = useNavigate();
+  const { notes, selectedNote } = useSelector(
+    (state: RootState) => state.notes
+  );
+  const note = notes.find(
+    (note: NoteType): boolean => note.id === props.noteId
+  );
+  const status = useSelector((state: RootState) => state.notes.status);
 
   if (!props.noteId) {
     navigate("/");
     return <NoteIndex path={"*"} />;
+  } else {
+    if (status.isLoadingEditor) {
+      return (
+        <div
+          css={{
+            display: "flex",
+            flexDirection: "column",
+            justifyContent: "center",
+            height: window.innerHeight,
+          }}
+        >
+          <Spinner size={"lg"} delay={0} center />
+        </div>
+      );
+    }
+    if (status.loadErrorEditor) {
+      return <NotFound />;
+    }
+    if (note && note.id === selectedNote.id) {
+      return <NoteEditor note={note} />;
+    }
+    return <NotFound />;
   }
-  return <NoteEditor noteId={props.noteId} />;
 }
 
 export default Note;

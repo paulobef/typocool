@@ -1,3 +1,4 @@
+import { verifyError } from "./../auth/actions";
 import { convertToRaw, EditorState, ContentState } from "draft-js";
 import {
   errorLoadingInit,
@@ -6,6 +7,9 @@ import {
   loadNotes,
   startLoadingMore,
   updateNoteFromServer,
+  startLoadingEditor,
+  errorLoadingEditor,
+  updateSelectedNote,
 } from "./actions";
 import { firestore, RootState } from "../index";
 import { AppThunkAction } from "../types";
@@ -28,10 +32,7 @@ const LIMIT = 20;
 // because we want firebase to generate the id instead of us and therefore don't pass the id to set() or add()
 // which expect a complete Note class and thus throw type error
 
-export const listenToNotesUpdates = (): AppThunkAction => async (
-  dispatch,
-  getState
-) => {
+export const fetchNotes = (): AppThunkAction => async (dispatch, getState) => {
   dispatch(startLoadingInit());
   const state: RootState = getState();
   const uid = state.auth.user.uid;
@@ -47,17 +48,6 @@ export const listenToNotesUpdates = (): AppThunkAction => async (
       .then((notesSnap) => {
         const lastVisible = notesSnap.docs[notesSnap.docs.length - 1];
         const notes = notesSnap.docs.map((note) => note.data());
-        notes.forEach((note) => {
-          firestore
-            .collection("notes")
-            .withConverter(noteConverter)
-            .doc(note.id)
-            .onSnapshot(function (noteSnap) {
-              const note = noteSnap.data();
-              if (!note) return;
-              dispatch(updateNoteFromServer(note));
-            });
-        });
         dispatch(loadNotes({ notes, lastVisible }));
       });
     console.log("realtime update");
@@ -77,19 +67,22 @@ export const fetchMoreNotes = (): AppThunkAction => async (
   const currentLastVisible = state.notes.lastVisible;
   if (!uid) throw new Error("no note to fetch, last visible is empty");
   try {
-    if (!currentLastVisible)
-      throw new Error("no note to fetch, last visible is empty");
-    const notesSnap = await firestore
+    if (!currentLastVisible) return;
+    firestore
       .collection("notes")
       .withConverter(noteConverter)
       .where("authorId", "==", uid)
       .orderBy("lastSaved", "desc")
       .startAfter(currentLastVisible)
       .limit(LIMIT)
-      .get();
-    const lastVisible = notesSnap.docs[notesSnap.docs.length - 1];
-    const notes = notesSnap.docs.map((note) => note.data());
-    dispatch(loadMoreNotes({ notes, lastVisible }));
+      .get()
+      .then((notesSnap) => {
+        console.log("listener called");
+        const lastVisible = notesSnap.docs[notesSnap.docs.length - 1];
+        const notes = notesSnap.docs.map((note) => note.data());
+        dispatch(loadMoreNotes({ notes, lastVisible }));
+      });
+
     console.log("more loaded");
   } catch (e) {
     dispatch(errorLoadingMore());
@@ -101,21 +94,43 @@ export const createNote = (
   currentLocation: string,
   navigate: (location: string) => void
 ): AppThunkAction => async (dispatch, getState) => {
+  dispatch(startLoadingEditor());
   const state: RootState = getState();
   const uid = state.auth.user.uid;
-  if (!uid) throw new Error("no uid");
+  if (!uid) {
+    dispatch(verifyError());
+  }
   const noteRef = firestore.collection("notes").doc();
-  await noteRef.set({
-    title: "",
-    content: convertToRaw(EditorState.createEmpty().getCurrentContent()),
-    authorId: uid,
-    lastSaved: dayjs().toISOString(),
-    version: 0,
-  });
-  if (currentLocation.includes("notes/")) {
-    navigate(noteRef.id);
-  } else {
-    navigate("notes/" + noteRef.id);
+  try {
+    await noteRef.set({
+      title: "",
+      content: convertToRaw(EditorState.createEmpty().getCurrentContent()),
+      authorId: uid,
+      lastSaved: dayjs().toISOString(),
+      version: 0,
+    });
+    const unsubscribe = await firestore
+      .collection("notes")
+      .withConverter(noteConverter)
+      .doc(noteRef.id)
+      .onSnapshot(function (noteSnap) {
+        console.log("listener called");
+        const note = noteSnap.data();
+        if (!note) {
+          dispatch(errorLoadingEditor());
+          return;
+        }
+        dispatch(updateNoteFromServer(note));
+      });
+    dispatch(updateSelectedNote({ id: noteRef.id, unsubscribe }));
+
+    if (currentLocation.includes("notes/")) {
+      navigate(noteRef.id);
+    } else {
+      navigate("notes/" + noteRef.id);
+    }
+  } catch (error) {
+    dispatch(errorLoadingEditor());
   }
 };
 
@@ -144,4 +159,27 @@ export const deleteNote = (id: string): AppThunkAction => async (
 ) => {
   const noteRef = firestore.collection("notes").doc(id);
   await noteRef.delete();
+};
+
+export const selectNote = (
+  id: string,
+  navigate: (location: string) => void
+): AppThunkAction => async (dispatch, getState) => {
+  const previouslySelected = getState().notes.selectedNote;
+  if (previouslySelected.unsubscribe) {
+    await previouslySelected.unsubscribe();
+    console.log("unsubscribed from: ", previouslySelected.id);
+  }
+  const unsubscribe = firestore
+    .collection("notes")
+    .withConverter(noteConverter)
+    .doc(id)
+    .onSnapshot(function (noteSnap) {
+      const note = noteSnap.data();
+      if (!note) return;
+      dispatch(updateNoteFromServer(note));
+    });
+  console.log("selected note: ", id);
+  dispatch(updateSelectedNote({ id, unsubscribe }));
+  navigate("/notes/" + id);
 };

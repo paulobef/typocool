@@ -1,11 +1,12 @@
 import React, { Fragment, ReactElement, useRef } from "react";
 import { List, ListItem, ScrollView, Skeleton } from "sancho";
-import { Link } from "@reach/router";
+import { Link, useNavigate } from "@reach/router";
 import { jsx } from "@emotion/core";
 import dateDisplayer, { timeDisplayer } from "../../utils/dateDisplayer";
 import { RootState } from "../../store";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchMoreNotes } from "../../store/notes/thunks";
+import { fetchMoreNotes, selectNote } from "../../store/notes/thunks";
+import { Note } from "../../store/notes/types";
 
 export interface NoteListProps {
   list: any;
@@ -13,9 +14,12 @@ export interface NoteListProps {
 
 /**@jsx jsx */
 function NoteList({ list }: NoteListProps) {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const scrollViewRef = useRef();
-  const { status } = useSelector((state: RootState) => state.notes);
+  const { status, selectedNote } = useSelector(
+    (state: RootState) => state.notes
+  );
 
   function handleScrollToBottom(event: React.UIEvent) {
     if (
@@ -35,6 +39,17 @@ function NoteList({ list }: NoteListProps) {
     }
     return elements;
   };
+
+  const sortedList = list.sort((a: Note, b: Note) => {
+    if (a.lastSaved.isBefore(b.lastSaved)) {
+      return 1;
+    } else if (a.lastSaved.isAfter(b.lastSaved)) {
+      return -1;
+    } else {
+      return 0;
+    }
+  });
+
   return (
     <ScrollView
       onScroll={handleScrollToBottom}
@@ -55,18 +70,20 @@ function NoteList({ list }: NoteListProps) {
             )}
           </Fragment>
         ) : (
-          list.map((item: any) => (
-            <Link css={{ textDecoration: "none" }} to={"notes/" + item.id}>
-              <ListItem
-                primary={item.title || "Untitled"}
-                secondary={
-                  item.lastSaved.isToday()
-                    ? timeDisplayer(item.lastSaved)
-                    : dateDisplayer(item.lastSaved)
-                }
-                wrap={false}
-              />
-            </Link>
+          sortedList.map((item: any) => (
+            <ListItem
+              css={{
+                borderLeft: selectedNote.id === item.id ? "3px solid red" : "",
+              }}
+              primary={item.title || "Untitled"}
+              secondary={
+                item.lastSaved.isToday()
+                  ? timeDisplayer(item.lastSaved)
+                  : dateDisplayer(item.lastSaved)
+              }
+              wrap={false}
+              onClick={() => dispatch(selectNote(item.id, navigate))}
+            />
           ))
         )}
         {status.isLoadingMore ? (

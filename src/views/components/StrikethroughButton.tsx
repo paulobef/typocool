@@ -7,9 +7,9 @@ const StrikethroughIcon = () => (
     version="1.1"
     id="Layer_1"
     xmlns="http://www.w3.org/2000/svg"
-    x="24px"
-    y="24px"
-    viewBox="0 0 335 335"
+    x="0px"
+    y="0px"
+    viewBox="-35 -35 415 415"
   >
     <path
       d="M335,152.5H168.849c-51.776-8.496-83.471-15.845-83.471-53.723C85.377,59.084,129.616,45,167.5,45

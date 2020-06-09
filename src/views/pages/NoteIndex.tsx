@@ -26,7 +26,7 @@ function NoteIndex(props: NoteScreenProps): JSX.Element {
       css={{ display: "flex", flexDirection: "column", alignItems: "center" }}
     >
       <img
-        src={"drawkit-notebook -man-monochrome.svg"}
+        src={"drawkit-notebook-man-monochrome.svg"}
         alt={"notebook"}
         height={500}
         width={500}

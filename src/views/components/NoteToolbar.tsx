@@ -1,13 +1,8 @@
-import React, { Fragment } from "react";
-import { EditorControl } from "../pages/Note";
-import {
-  IconButton,
-  IconMoreVertical,
-  MenuItem,
-  MenuList,
-  ResponsivePopover,
-} from "sancho";
-import { jsx } from "@emotion/core";
+import React, { Fragment } from 'react'
+import { IconButton, IconMoreVertical, MenuItem, MenuList, ResponsivePopover } from 'sancho'
+import { jsx } from '@emotion/core'
+
+import { EditorControl } from '../pages/Note'
 
 class ErrorBoundary extends React.Component {
   state: any;
@@ -43,7 +38,7 @@ interface EditorToolbarProps {
 }
 
 /** @jsx jsx */
-const NoteToolbar = ({ controlsMap }: EditorToolbarProps) => {
+export const NoteToolbar = ({ controlsMap }: EditorToolbarProps) => {
   return (
     <div
       css={{
@@ -84,5 +79,3 @@ const NoteToolbar = ({ controlsMap }: EditorToolbarProps) => {
     </div>
   );
 };
-
-export default NoteToolbar;
