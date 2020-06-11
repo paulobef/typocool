@@ -1,13 +1,14 @@
 import "../../App.css";
 import "draft-js/dist/Draft.css";
-import "draft-js-inline-toolbar-plugin/lib/plugin.css";
 import "../../styles/inline-toolbar.css";
+import "../../styles/emoji.css";
 
 import dayjs from "dayjs";
 import isToday from "dayjs/plugin/isToday";
 import isYesterday from "dayjs/plugin/isYesterday";
 import relativeTime from "dayjs/plugin/relativeTime";
 import createInlineToolbarPlugin from "draft-js-inline-toolbar-plugin";
+import createEmojiPlugin from "draft-js-emoji-plugin";
 import Editor from "draft-js-plugins-editor";
 import React, { useRef, useState } from "react";
 import { EditorState } from "draft-js";
@@ -26,7 +27,7 @@ import NoteIndex from "./NoteIndex";
 import dateDisplayer, { timeDisplayer } from "../../utils/dateDisplayer";
 import { RootState } from "../../store";
 import { updateLoadedNote, visitSelectedNote } from "../../store/notes/actions";
-import { deleteNote, updateNote } from "../../store/notes/thunks";
+import { deleteNote, updateNote, selectNote } from "../../store/notes/thunks";
 import { StrikethroughButton } from "../components/StrikethroughButton";
 import { Note as NoteType } from "../../store/notes/types";
 import { NoteToolbar } from "../components/NoteToolbar";
@@ -46,16 +47,18 @@ export type StyleControl = {
 
 export type EditorControl = {
   icon: React.ComponentElement<null, any>;
-  handler: (event: React.MouseEvent) => void;
+  handler: () => void;
   label: string;
 };
 
+// CUSTOM STYLE MAP
 const styleMap = {
   STRIKETHROUGH: {
     textDecoration: "line-through",
   },
 };
 
+// DRAFTJS PLUGINS //
 const inlineToolbarPlugin = createInlineToolbarPlugin({
   theme: {
     toolbarStyles: {
@@ -68,6 +71,41 @@ const inlineToolbarPlugin = createInlineToolbarPlugin({
     },
   },
 });
+export const emojiTheme = {
+  emoji: "emoji",
+  emojiSuggestions: "emojiSuggestions",
+  emojiSuggestionsEntry: "emojiSuggestionsEntry",
+  emojiSuggestionsEntryFocused: "emojiSuggestionsEntryFocused",
+  emojiSuggestionsEntryText: "emojiSuggestionsEntryText",
+  emojiSuggestionsEntryIcon: "emojiSuggestionsEntryIcon",
+  emojiSelect: "emojiSelect",
+  emojiSelectButton: "emojiSelectButton",
+  emojiSelectButtonPressed: "emojiSelectButtonPressed",
+  emojiSelectPopover: "emojiSelectPopover",
+  emojiSelectPopoverClosed: "emojiSelectPopoverClosed",
+  emojiSelectPopoverTitle: "emojiSelectPopoverTitle",
+  emojiSelectPopoverGroups: "emojiSelectPopoverGroups",
+  emojiSelectPopoverGroup: "emojiSelectPopoverGroup",
+  emojiSelectPopoverGroupTitle: "emojiSelectPopoverGroupTitle",
+  emojiSelectPopoverGroupList: "emojiSelectPopoverGroupList",
+  emojiSelectPopoverGroupItem: "emojiSelectPopoverGroupItem",
+  emojiSelectPopoverToneSelect: "emojiSelectPopoverToneSelect",
+  emojiSelectPopoverToneSelectList: "emojiSelectPopoverToneSelectList",
+  emojiSelectPopoverToneSelectItem: "emojiSelectPopoverToneSelectItem",
+  emojiSelectPopoverEntry: "emojiSelectPopoverEntry",
+  emojiSelectPopoverEntryFocused: "emojiSelectPopoverEntryFocused",
+  emojiSelectPopoverEntryIcon: "emojiSelectPopoverEntryIcon",
+  emojiSelectPopoverNav: "emojiSelectPopoverNav",
+  emojiSelectPopoverNavItem: "emojiSelectPopoverNavItem",
+  emojiSelectPopoverNavEntry: "emojiSelectPopoverNavEntry",
+  emojiSelectPopoverNavEntryActive: "emojiSelectPopoverNavEntryActive",
+  emojiSelectPopoverScrollbar: "emojiSelectPopoverScrollbar",
+  emojiSelectPopoverScrollbarThumb: "emojiSelectPopoverScrollbarThumb",
+};
+const emojiPlugin = createEmojiPlugin({
+  theme: emojiTheme,
+});
+const { EmojiSuggestions, EmojiSelect } = emojiPlugin;
 const { InlineToolbar } = inlineToolbarPlugin;
 
 /** @jsx jsx */
@@ -135,7 +173,7 @@ const NoteEditor = ({ note }: { note: NoteType }) => {
     controlsMap.push({
       label: "Delete",
       icon: <IconXCircle />,
-      handler: function handleDeleteNote() {
+      handler: function handleDeleteNote(): void {
         dispatch(deleteNote(id));
         navigate("/");
       },
@@ -155,8 +193,14 @@ const NoteEditor = ({ note }: { note: NoteType }) => {
       }}
     >
       <div css={{ display: "flex", flexDirection: "row" }}>
-        <div css={{ alignSelf: "flex-start", position: "sticky", top: 0 }}>
-          <NoteToolbar controlsMap={controlsMap} />
+        <div
+          css={{
+            alignSelf: "flex-start",
+            position: "sticky",
+            top: 0,
+          }}
+        >
+          <NoteToolbar moreControls={controlsMap} controls={<EmojiSelect />} />
         </div>
         <div
           css={{ display: "flex", flexDirection: "column" }}
@@ -170,7 +214,7 @@ const NoteEditor = ({ note }: { note: NoteType }) => {
             <NoteTitle
               onKeyPress={handlePressEnter}
               value={title}
-              placeholder={"How to make raviolis"}
+              placeholder={"A nice title here..."}
               onChange={handleUpdateTitle}
               date={dateDisplayer(lastSaved)}
               time={timeDisplayer(lastSaved)}
@@ -187,12 +231,13 @@ const NoteEditor = ({ note }: { note: NoteType }) => {
               }}
             >
               <Editor
+                css={{ zIndex: 1 }}
                 ref={editorRef}
                 customStyleMap={styleMap}
                 editorState={state}
                 onChange={handleUpdateEditorState}
                 placeholder={"Write down some thoughts..."}
-                plugins={[inlineToolbarPlugin]}
+                plugins={[inlineToolbarPlugin, emojiPlugin]}
               />
               <InlineToolbar
                 children={(
@@ -206,6 +251,7 @@ const NoteEditor = ({ note }: { note: NoteType }) => {
                   </div>
                 )}
               />
+              <EmojiSuggestions />
             </div>
           </div>
         </div>
@@ -221,6 +267,7 @@ export interface NoteScreenProps extends RouteComponentProps {
 /** @jsx jsx */
 function Note(props: NoteScreenProps) {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
   const { notes, selectedNote } = useSelector(
     (state: RootState) => state.notes
   );
@@ -233,6 +280,9 @@ function Note(props: NoteScreenProps) {
     navigate("/");
     return <NoteIndex path={"*"} />;
   } else {
+    if (selectedNote.id === "") {
+      dispatch(selectNote(props.noteId, navigate));
+    }
     if (status.isLoadingEditor) {
       return (
         <div

@@ -20,13 +20,14 @@ function NoteList({ list }: NoteListProps) {
   const { status, selectedNote } = useSelector(
     (state: RootState) => state.notes
   );
+  const { isLoadingMore, isLoadingInit } = status;
 
   function handleScrollToBottom(event: React.UIEvent) {
+    if (isLoadingMore || isLoadingInit) return;
     if (
+      // prettier-ignore
       // @ts-ignore - cause Typescript thinks scrollViewRef.current can be undefined even with scrollViewRef.current !== undefined condition. But it works on screen.
-      scrollViewRef.current.scrollHeight - scrollViewRef.current.scrollTop ===
-      // @ts-ignore
-      scrollViewRef.current.clientHeight
+      scrollViewRef.current.scrollHeight - scrollViewRef.current.scrollTop === scrollViewRef.current.clientHeight
     ) {
       dispatch(fetchMoreNotes());
     }
@@ -73,7 +74,8 @@ function NoteList({ list }: NoteListProps) {
           sortedList.map((item: any) => (
             <ListItem
               css={{
-                borderLeft: selectedNote.id === item.id ? "3px solid red" : "",
+                borderLeft:
+                  selectedNote.id === item.id ? "3px solid #47d5ad" : "",
               }}
               primary={item.title || "Untitled"}
               secondary={
@@ -86,7 +88,7 @@ function NoteList({ list }: NoteListProps) {
             />
           ))
         )}
-        {status.isLoadingMore ? (
+        {status.isLoadingMore && !status.loadErrorMore ? (
           <Fragment>
             <ListItem
               primary={<Skeleton />}

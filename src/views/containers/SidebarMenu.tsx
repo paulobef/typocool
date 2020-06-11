@@ -47,7 +47,7 @@ function SidebarMenu(): JSX.Element {
           contentBefore={<IconPlus />}
           onClick={handleNewNote}
           primary={"New"}
-        />{" "}
+        />
         {/* TODO: Implement Full text search https://firebase.google.com/docs/firestore/solutions/search
                 <ListItem
                     primary={<Input

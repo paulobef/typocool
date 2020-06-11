@@ -13,12 +13,13 @@ import {
   ERROR_LOADING_EDITOR,
   SELECT_NOTE,
   VISIT_NOTE,
+  DELETE_LOADED_NOTE,
 } from "./types";
 import firebase from "firebase";
 
 export function loadNotes(payload: {
   notes: Note[];
-  lastVisible: firebase.firestore.QueryDocumentSnapshot;
+  nextQuery: firebase.firestore.Query;
 }): NoteActionTypes {
   return {
     type: LOAD_NOTES,
@@ -28,7 +29,7 @@ export function loadNotes(payload: {
 
 export function loadMoreNotes(payload: {
   notes: Note[];
-  lastVisible: firebase.firestore.QueryDocumentSnapshot;
+  nextQuery: firebase.firestore.Query;
 }): NoteActionTypes {
   return {
     type: LOAD_MORE_NOTES,
@@ -99,5 +100,12 @@ export function updateNoteFromServer(payload: Note): NoteActionTypes {
 export function visitSelectedNote(): NoteActionTypes {
   return {
     type: VISIT_NOTE,
+  };
+}
+
+export function deleteLoadedNote(payload: string): NoteActionTypes {
+  return {
+    type: DELETE_LOADED_NOTE,
+    payload,
   };
 }

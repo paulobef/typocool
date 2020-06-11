@@ -1,7 +1,13 @@
-import ContentEditable from 'react-contenteditable'
-import React, { FormEvent, Fragment, MutableRefObject, useRef, useState } from 'react'
-import { Text, useTheme } from 'sancho'
-import { jsx } from '@emotion/core'
+import ContentEditable from "react-contenteditable";
+import React, {
+  FormEvent,
+  Fragment,
+  MutableRefObject,
+  useRef,
+  useState,
+} from "react";
+import { Text, useTheme } from "sancho";
+import { jsx } from "@emotion/core";
 
 interface EditableTitleProps {
   value: string | null;

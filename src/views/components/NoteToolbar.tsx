@@ -1,8 +1,9 @@
-import React, { Fragment } from 'react'
-import { IconButton, IconMoreVertical, MenuItem, MenuList, ResponsivePopover } from 'sancho'
-import { jsx } from '@emotion/core'
+import React, { Fragment, useState } from "react";
+import { IconButton, IconMoreVertical, MenuItem, MenuList } from "sancho";
+import Popover from "react-tiny-popover";
+import { jsx } from "@emotion/core";
 
-import { EditorControl } from '../pages/Note'
+import { EditorControl } from "../pages/Note";
 
 class ErrorBoundary extends React.Component {
   state: any;
@@ -34,11 +35,24 @@ class ErrorBoundary extends React.Component {
 }
 
 interface EditorToolbarProps {
-  controlsMap: Array<EditorControl>;
+  moreControls: Array<EditorControl>;
+  controls: JSX.Element;
+}
+interface PopoverTargetProps extends React.ComponentPropsWithoutRef<"div"> {
+  onClick(): void;
 }
 
+const PopoverTarget = React.forwardRef<HTMLDivElement, PopoverTargetProps>(
+  (props, ref) => (
+    <div ref={ref} onClick={props.onClick}>
+      {props.children}
+    </div>
+  )
+);
+
 /** @jsx jsx */
-export const NoteToolbar = ({ controlsMap }: EditorToolbarProps) => {
+export const NoteToolbar = ({ moreControls, controls }: EditorToolbarProps) => {
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
   return (
     <div
       css={{
@@ -52,28 +66,46 @@ export const NoteToolbar = ({ controlsMap }: EditorToolbarProps) => {
         marginTop: 50,
       }}
     >
-      <ErrorBoundary controlsMap={controlsMap}>
+      <ErrorBoundary controlsMap={moreControls}>
         <Fragment>
-          <ResponsivePopover
+          <Popover
+            isOpen={isPopoverOpen}
+            onClickOutside={() => setIsPopoverOpen(!isPopoverOpen)}
+            position={"left"}
+            containerStyle={{
+              border: "1px solid lightgrey",
+              borderRadius: "5px",
+            }}
             content={
               <MenuList>
-                {controlsMap.map(
+                {moreControls.map(
                   ({ icon, label, handler }: EditorControl, key: number) => (
-                    <MenuItem key={key} contentBefore={icon} onClick={handler}>
+                    <MenuItem
+                      key={key}
+                      contentBefore={icon}
+                      onClick={(event) => handler()}
+                    >
                       {label}
                     </MenuItem>
                   )
                 )}
               </MenuList>
             }
-            placement={"auto"}
           >
-            <IconButton
-              variant="ghost"
-              icon={<IconMoreVertical />}
-              label="show more"
-            />
-          </ResponsivePopover>
+            {(ref) => (
+              <PopoverTarget
+                ref={ref}
+                onClick={() => setIsPopoverOpen(!isPopoverOpen)}
+              >
+                <IconButton
+                  variant="ghost"
+                  icon={<IconMoreVertical />}
+                  label="show more"
+                />
+              </PopoverTarget>
+            )}
+          </Popover>
+          {controls}
         </Fragment>
       </ErrorBoundary>
     </div>

@@ -14,6 +14,7 @@ export const UPDATE_LOADED_NOTE = "app/notes/update_loaded";
 export const UPDATE_NOTE_FROM_SERVER = "app/notes/update_from_server";
 export const SELECT_NOTE = "app/notes/select";
 export const VISIT_NOTE = "app/notes/visit";
+export const DELETE_LOADED_NOTE = "app/notes/delete";
 
 // STATE TYPES
 export class Note {
@@ -48,7 +49,7 @@ export interface NoteState {
     visited: boolean;
     unsubscribe?: Function; // not very Redux-ish but necessary to be able to unsubscribe from previously selected note and save bandwidth and reads
   };
-  lastVisible: firebase.firestore.QueryDocumentSnapshot;
+  nextQuery: firebase.firestore.Query;
 }
 
 interface visitSelectedNoteAction {
@@ -59,7 +60,7 @@ interface loadNotesAction {
   type: typeof LOAD_NOTES;
   payload: {
     notes: Note[];
-    lastVisible: firebase.firestore.QueryDocumentSnapshot;
+    nextQuery: firebase.firestore.Query;
   };
 }
 
@@ -67,7 +68,7 @@ interface loadMoreNotesAction {
   type: typeof LOAD_MORE_NOTES;
   payload: {
     notes: Note[];
-    lastVisible: firebase.firestore.QueryDocumentSnapshot;
+    nextQuery: firebase.firestore.Query;
   };
 }
 
@@ -88,6 +89,11 @@ interface errorLoadingAction {
 interface updateLoadedNoteAction {
   type: typeof UPDATE_LOADED_NOTE;
   payload: Note;
+}
+
+interface deleteLoadedNoteAction {
+  type: typeof DELETE_LOADED_NOTE;
+  payload: string;
 }
 
 interface updateNoteFromServerAction {
@@ -111,4 +117,5 @@ export type NoteActionTypes =
   | updateLoadedNoteAction
   | updateNoteFromServerAction
   | updateSelectedNoteAction
-  | visitSelectedNoteAction;
+  | visitSelectedNoteAction
+  | deleteLoadedNoteAction;

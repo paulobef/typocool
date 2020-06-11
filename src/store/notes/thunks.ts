@@ -1,5 +1,10 @@
 import { verifyError } from "./../auth/actions";
-import { convertToRaw, EditorState, ContentState } from "draft-js";
+import {
+  convertToRaw,
+  EditorState,
+  ContentState,
+  convertFromRaw,
+} from "draft-js";
 import {
   errorLoadingInit,
   errorLoadingMore,
@@ -10,6 +15,7 @@ import {
   startLoadingEditor,
   errorLoadingEditor,
   updateSelectedNote,
+  deleteLoadedNote,
 } from "./actions";
 import { firestore, RootState } from "../index";
 import { AppThunkAction } from "../types";
@@ -20,6 +26,8 @@ import isYesterday from "dayjs/plugin/isYesterday";
 // @ts-ignore
 import relativeTime from "dayjs/plugin/relativeTime";
 import { startLoadingInit } from "../notes/actions";
+import { Note } from "./types";
+import { isNullOrUndefined } from "util";
 
 dayjs.extend(isToday);
 dayjs.extend(isYesterday);
@@ -32,25 +40,47 @@ const LIMIT = 20;
 // because we want firebase to generate the id instead of us and therefore don't pass the id to set() or add()
 // which expect a complete Note class and thus throw type error
 
+const converter = (note: firebase.firestore.DocumentSnapshot) => {
+  const id = note.id;
+  const data = note.data();
+  if (!data) throw new Error();
+  const localNote = new Note(
+    id,
+    data.title,
+    data.content && data.content !== ""
+      ? EditorState.createWithContent(convertFromRaw(data.content))
+      : EditorState.createEmpty(),
+    data.authorId,
+    dayjs(data.lastSaved),
+    data.version ? data.version : 0
+  );
+  return localNote;
+};
+
+const query = (uid: string): firebase.firestore.Query =>
+  firestore
+    .collection("notes")
+    .where("authorId", "==", uid)
+    .orderBy("lastSaved", "desc")
+    .limit(LIMIT);
+
 export const fetchNotes = (): AppThunkAction => async (dispatch, getState) => {
-  dispatch(startLoadingInit());
   const state: RootState = getState();
+  const { isLoadingInit } = state.notes.status;
+  if (isLoadingInit) return; // make sure we don't load duplicate
+  dispatch(startLoadingInit());
   const uid = state.auth.user.uid;
   if (!uid) return;
   try {
-    firestore
-      .collection("notes")
-      .withConverter(noteConverter)
-      .where("authorId", "==", uid)
-      .orderBy("lastSaved", "desc")
-      .limit(LIMIT)
+    query(uid)
       .get()
       .then((notesSnap) => {
         const lastVisible = notesSnap.docs[notesSnap.docs.length - 1];
-        const notes = notesSnap.docs.map((note) => note.data());
-        dispatch(loadNotes({ notes, lastVisible }));
+        const notes: Note[] = notesSnap.docs.map(converter);
+        dispatch(
+          loadNotes({ notes, nextQuery: query(uid).startAfter(lastVisible) })
+        );
       });
-    console.log("realtime update");
   } catch (error) {
     dispatch(errorLoadingInit());
     console.log(error);
@@ -61,27 +91,31 @@ export const fetchMoreNotes = (): AppThunkAction => async (
   dispatch,
   getState
 ) => {
-  dispatch(startLoadingMore());
   const state: RootState = getState();
+  const { isLoadingMore, isLoadingInit } = state.notes.status;
+  if (isLoadingMore || isLoadingInit) return; // wait for loading previous page before fetching new batch
+  dispatch(startLoadingMore());
   const uid = state.auth.user.uid;
-  const currentLastVisible = state.notes.lastVisible;
-  if (!uid) throw new Error("no note to fetch, last visible is empty");
+  const nextQuery = state.notes.nextQuery;
+  if (!uid) {
+    throw new Error("no note to fetch, last visible is empty");
+  }
   try {
-    if (!currentLastVisible) return;
-    firestore
-      .collection("notes")
-      .withConverter(noteConverter)
-      .where("authorId", "==", uid)
-      .orderBy("lastSaved", "desc")
-      .startAfter(currentLastVisible)
-      .limit(LIMIT)
-      .get()
-      .then((notesSnap) => {
-        console.log("listener called");
-        const lastVisible = notesSnap.docs[notesSnap.docs.length - 1];
-        const notes = notesSnap.docs.map((note) => note.data());
-        dispatch(loadMoreNotes({ notes, lastVisible }));
-      });
+    nextQuery.get().then((notesSnap) => {
+      if (notesSnap.docs.length === 0 || notesSnap.docs.length === 1) {
+        dispatch(errorLoadingMore());
+        return;
+      }
+      const lastVisible = notesSnap.docs[notesSnap.docs.length - 1];
+      const notes: Note[] = notesSnap.docs.map(converter);
+      console.log("called");
+      dispatch(
+        loadMoreNotes({
+          notes,
+          nextQuery: query(uid).startAfter(lastVisible),
+        })
+      );
+    });
 
     console.log("more loaded");
   } catch (e) {
@@ -157,8 +191,14 @@ export const deleteNote = (id: string): AppThunkAction => async (
   dispatch,
   getState
 ) => {
-  const noteRef = firestore.collection("notes").doc(id);
-  await noteRef.delete();
+  dispatch(startLoadingEditor());
+  try {
+    const noteRef = firestore.collection("notes").doc(id);
+    await noteRef.delete();
+    dispatch(deleteLoadedNote(id));
+  } catch (error) {
+    dispatch(errorLoadingEditor());
+  }
 };
 
 export const selectNote = (
@@ -166,7 +206,7 @@ export const selectNote = (
   navigate: (location: string) => void
 ): AppThunkAction => async (dispatch, getState) => {
   const previouslySelected = getState().notes.selectedNote;
-  if (previouslySelected.unsubscribe) {
+  if (previouslySelected.unsubscribe !== undefined) {
     await previouslySelected.unsubscribe();
     console.log("unsubscribed from: ", previouslySelected.id);
   }

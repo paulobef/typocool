@@ -14,6 +14,7 @@ import {
   START_LOADING_EDITOR,
   SELECT_NOTE,
   VISIT_NOTE,
+  DELETE_LOADED_NOTE,
 } from "./types";
 import firebase from "firebase";
 import { endLoadingWithError, startLoading } from "../utils";
@@ -32,7 +33,7 @@ function loadNotes(
   state: NoteState,
   payload: {
     notes: Note[];
-    lastVisible: firebase.firestore.QueryDocumentSnapshot;
+    nextQuery: firebase.firestore.Query;
   }
 ): NoteState {
   const status = {
@@ -42,19 +43,19 @@ function loadNotes(
   };
   return Object.freeze({
     ...state,
-    notes: payload.notes,
+    notes: [...state.notes, ...payload.notes],
     status,
-    lastVisible: payload.lastVisible,
+    nextQuery: payload.nextQuery,
   });
 }
 function loadMoreNotes(
   state: NoteState,
   payload: {
     notes: Note[];
-    lastVisible: firebase.firestore.QueryDocumentSnapshot;
+    nextQuery: firebase.firestore.Query;
   }
 ): NoteState {
-  const notes = [...state.notes, ...payload.notes];
+  const newNotes = [...state.notes, ...payload.notes];
   const status = {
     ...state.status,
     isLoadingMore: false,
@@ -62,9 +63,9 @@ function loadMoreNotes(
   };
   return Object.freeze({
     ...state,
-    notes,
+    notes: newNotes,
     status,
-    lastVisible: payload.lastVisible,
+    nextQuery: payload.nextQuery,
   });
 }
 
@@ -72,11 +73,12 @@ function updateLoadedNote(state: NoteState, payload: Note): NoteState {
   const newNotes = state.notes.map((note) =>
     note.id === payload.id ? payload : note
   );
-  return Object.freeze(
-    Object.assign({}, state, {
+  return Object.freeze({
+    ...state,
+    ...{
       notes: newNotes,
-    })
-  );
+    },
+  });
 }
 
 function updateNoteFromServer(state: NoteState, payload: Note): NoteState {
@@ -86,7 +88,7 @@ function updateNoteFromServer(state: NoteState, payload: Note): NoteState {
     loadErrorEditor: false,
   };
   const existingNote = state.notes.find((note) => note.id === payload.id);
-  if (existingNote) {
+  if (existingNote !== null || existingNote !== undefined) {
     const newNotes = state.notes.map((note) => {
       if (note.id === payload.id && note.version < payload.version) {
         console.log("updated");
@@ -94,26 +96,44 @@ function updateNoteFromServer(state: NoteState, payload: Note): NoteState {
       }
       return note;
     });
-    return Object.freeze(
-      Object.assign({}, state, {
+    return Object.freeze({
+      ...state,
+      ...{
         notes: newNotes,
         status: newStatus,
-      })
-    );
+      },
+    });
   } else {
     const newNotes = [...state.notes, payload];
-    return Object.freeze(
-      Object.assign({}, state, {
+    return Object.freeze({
+      ...state,
+      ...{
         notes: newNotes,
         status: newStatus,
-      })
-    );
+      },
+    });
   }
 }
 
 function visitSelectedNote(state: NoteState): NoteState {
   const newSelectedNote = { ...state.selectedNote, visited: true };
   return Object.freeze({ ...state, selectedNote: newSelectedNote });
+}
+
+function deleteLoadedNote(state: NoteState, payload: string): NoteState {
+  const newStatus = {
+    ...state.status,
+    isLoadingEditor: false,
+    loadErrorEditor: false,
+  };
+  const newNotes = state.notes.filter((note) => note.id !== payload);
+  return Object.freeze({
+    ...state,
+    ...{
+      notes: newNotes,
+      status: newStatus,
+    },
+  });
 }
 
 const initialState: NoteState = Object.freeze({
@@ -131,7 +151,7 @@ const initialState: NoteState = Object.freeze({
     visited: false,
     unsubscribe: function () {},
   },
-  lastVisible: Object.create(null),
+  nextQuery: Object.create(null),
 });
 
 export default function notes(
@@ -161,6 +181,8 @@ export default function notes(
       ) as NoteState;
     case UPDATE_LOADED_NOTE:
       return updateLoadedNote(state, action.payload);
+    case DELETE_LOADED_NOTE:
+      return deleteLoadedNote(state, action.payload);
     case UPDATE_NOTE_FROM_SERVER:
       return updateNoteFromServer(state, action.payload);
     case START_LOADING_EDITOR:
