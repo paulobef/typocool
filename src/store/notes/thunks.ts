@@ -210,15 +210,19 @@ export const selectNote = (
     await previouslySelected.unsubscribe();
     console.log("unsubscribed from: ", previouslySelected.id);
   }
-  const unsubscribe = firestore
-    .collection("notes")
-    .withConverter(noteConverter)
-    .doc(id)
-    .onSnapshot(function (noteSnap) {
-      const note = noteSnap.data();
-      if (!note) return;
-      dispatch(updateNoteFromServer(note));
-    });
+  let unsubscribe = () => {};
+  const isCollaborative = false;
+  if (isCollaborative) {
+    unsubscribe = firestore
+      .collection("notes")
+      .withConverter(noteConverter)
+      .doc(id)
+      .onSnapshot(function (noteSnap) {
+        const note = noteSnap.data();
+        if (!note) return;
+        dispatch(updateNoteFromServer(note));
+      });
+  }
   console.log("selected note: ", id);
   dispatch(updateSelectedNote({ id, unsubscribe }));
   navigate("/notes/" + id);
